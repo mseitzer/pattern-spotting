@@ -56,14 +56,13 @@ def main(arguments):
         folder_name = os.path.splitext(os.path.basename(file))[0]
         folder_path = '{}/{}'.format(base_folder, folder_name)
 
-        if not os.path.exists(folder_path):
-            os.mkdir(folder_path)
-
         csv_file = '{}/{}.csv'.format(base_folder, folder_name)
         with open(csv_file, 'w') as f:
             construct_index(f, folder_name, charters)
 
         if not args.only_index:
+            if not os.path.exists(folder_path):
+                os.mkdir(folder_path)
             download_images(folder_path, image_urls)
 
 
