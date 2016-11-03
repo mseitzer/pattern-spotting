@@ -30,7 +30,7 @@ def parse_xml(path):
 
 def download_images(folder, images):
     for image in images:
-        subprocess.call(['wget', '-P', folder, image])
+        subprocess.call(['wget', '--no-clobber', '-P', folder, image])
 
 
 def construct_index(f, folder, charters):
