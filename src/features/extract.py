@@ -1,7 +1,6 @@
 import os, sys
 import argparse
 import numpy as np
-import keras.preprocessing.image as keras_image
 
 from . import database
 from models import load
@@ -27,7 +26,7 @@ def _region_generator(array, size, overlap, verbose=False):
             col_end = min(col + size, width)
             if verbose:
                 print('Current region: row {}:{}, col {}:{}'.format(
-                        row, row_end, col, col_end))
+                    row, row_end, col, col_end))
 
             yield array[row:row_end, col:col_end]
 
@@ -40,7 +39,7 @@ def _region_generator(array, size, overlap, verbose=False):
         row = round(row + (1 - overlap) * (row + size))
 
 
-def _compute_r_mac(features):
+def _compute_r_mac(features, verbose=False):
     """
     Computes regional maximum activations of convolutions
     (see arXiv:1511.05879)
@@ -58,7 +57,8 @@ def _compute_r_mac(features):
 
     for scale in range(min_scale, max_scale+1):
         r_size = round(2 * min(height, width) / (scale + 1))
-        print('Region width at scale {}: {}'.format(scale, r_size))
+        if verbose:
+            print('Region width at scale {}: {}'.format(scale, r_size))
 
         # Uniform sampling of square regions with 40% overlap
         for region in _region_generator(features, r_size, 0.4):
@@ -94,11 +94,23 @@ def representation_size(model):
     return model.layers[-1].output_shape[3]
 
 
+def load_image(image_path):
+    """Loads an image into a representation suitable to input into Keras models
+    """
+    import keras.preprocessing.image as keras_image
+    image = keras_image.load_img(image_path)
+    image = keras_image.img_to_array(image)
+    image = np.expand_dims(image, axis=0)
+    return image
+
+
 def main(args):
     args = parser.parse_args(args)
 
-    # TODO: get images dynamically
-    images = ['1.png']
+    extensions = ['.png', '.jpg']
+    images = os.listdir(args.image_base_dir)
+    images = [img for img in images if os.path.splitext(img)[1] in extensions]
+
     model_name = 'VGG16'  # TODO: make argument
 
     db = database.Database(model_name)
@@ -109,10 +121,7 @@ def main(args):
 
     for idx, image_name in enumerate(images):
         image_path = os.path.join(args.image_base_dir, image_name)
-        image = keras_image.load_img(image_path)
-        image = keras_image.img_to_array(image)
-        image = np.expand_dims(image, axis=0)
-
+        image = load_image(image_path)
         image = preprocess_fn(image)
 
         features = compute_representation(model, image)
