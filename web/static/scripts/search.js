@@ -76,6 +76,7 @@ function load_image_from_url(url) {
 
 	$('#image').hide();
 	$('#input_search_url').val("");
+	$('#input_image_file').val("");
 
 	var img = new Image();
 	img.onload = function() {
@@ -103,7 +104,6 @@ function load_image_from_file(file_node) {
 		$('#block_crop_selection_right').hide();
 		$('#image').attr('src', e.target.result);
 		$('#crop').hide().attr('src', e.target.result);
-		$('#input_search_file').attr('files', file_node.files);
 	})
 	reader.readAsDataURL(file_node.files[0]);
 }
