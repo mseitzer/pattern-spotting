@@ -17,7 +17,7 @@ parser.add_argument('--root-dir', dest='root_dir', default=None,
                     help='Directory to which relatives paths are taken')
 parser.add_argument('database',
                     help='Filename of the database to use')
-parser.add_argument('input', 
+parser.add_argument('input', nargs='?', default=None,
                     help='Either a folder or a CSV file to parse')
 
 EXTENSIONS = ['.png', '.jpg']
@@ -57,9 +57,14 @@ def main(args):
         db = Database.load(args.database)
 
     if args.command == 'LIST':
-        print('Database contains {} images'.format(len(db)))
+        print('Database {} contains {} images'.format(db.name, len(db)))
         for path, data in db.iter_images():
             print(path)
+        return
+
+    if not args.input:
+        print('Input file/folder required')
+        return
 
     if args.root_dir:
         args.root_dir = os.path.abspath(args.root_dir)
