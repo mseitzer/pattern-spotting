@@ -1,15 +1,17 @@
+#!/usr/bin/env python3
 import os
 import sys
 import argparse
 import csv
 
 # Path hack to be able to import from sibling directory
-sys.path.append(os.path.abspath('../src'))
-from database import Database
+sys.path.append(os.path.abspath(os.path.split(os.path.realpath(__file__))[0]
+                                + '/..'))
+from src.database import Database
 
 parser = argparse.ArgumentParser(description=
                                  'Modify an image database')
-parser.add_argument('command', choices=['CREATE', 'ADD'],
+parser.add_argument('command', choices=['CREATE', 'ADD', 'LIST'],
                     help='Action to execute')
 parser.add_argument('--root-dir', dest='root_dir', default=None, 
                     help='Directory to which relatives paths are taken')
@@ -51,8 +53,13 @@ def main(args):
 
     if args.command == 'CREATE':
         db = Database(os.path.basename(args.database))
-    elif args.command == 'ADD':
+    elif args.command in ['ADD', 'LIST']:
         db = Database.load(args.database)
+
+    if args.command == 'LIST':
+        print('Database contains {} images'.format(len(db)))
+        for path, data in db.iter_images():
+            print(path)
 
     if args.root_dir:
         args.root_dir = os.path.abspath(args.root_dir)
