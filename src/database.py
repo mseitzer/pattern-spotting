@@ -5,6 +5,9 @@ class Database:
         self.name = name
         self.images = {}
 
+    def __len__():
+        return len(self.images)
+
     def add_image(self, image_path):
         """Adds an image to the database"""
         img_dict = {
@@ -12,6 +15,9 @@ class Database:
         }
         self.images[image_path] = img_dict
         return img_dict
+
+    def iter_images(self):
+        iter(self.images.items())
 
     def save(self, path):
         with open(path, 'wb') as f:
