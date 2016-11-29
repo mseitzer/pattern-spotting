@@ -9,7 +9,7 @@ import numpy as np
 # Path hack to be able to import from sibling directory
 sys.path.append(os.path.abspath(os.path.split(os.path.realpath(__file__))[0]
                                 + '/..'))
-from src.models import load
+from src.models import load_model
 from src.features import compute_representation, \
                          representation_size, \
                          load_image
@@ -41,7 +41,7 @@ def main(args):
     images = os.listdir(args.image_base_dir)
     images = [img for img in images if os.path.splitext(img)[1] in extensions]
 
-    model, preprocess_fn = load(args.model)
+    model, preprocess_fn = load_model(args.model)
 
     meta_data = {}
     feature_store = np.empty((len(images), representation_size(model)))

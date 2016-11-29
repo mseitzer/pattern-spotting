@@ -1,7 +1,7 @@
 from .pretrained import pretrained_models, preprocessor
 
 
-def load(model_name, models_path='', output_layer=None):
+def load_model(model_name, models_path='', output_layer=None):
     pretrained_model_fn = pretrained_models(model_name)
     if pretrained_model_fn is not None:
         if output_layer is not None:
