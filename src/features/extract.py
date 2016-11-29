@@ -76,6 +76,7 @@ def compute_representation(model, image):
 
 
 def representation_size(model):
+    # Note that this does not work for both Tensorflow and Theano backends
     return model.layers[-1].output_shape[3]
 
 

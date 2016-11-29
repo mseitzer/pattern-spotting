@@ -5,6 +5,7 @@ import numpy as np
 
 from ..database import Database
 from ..models import load
+from ..features import representation_size
 
 class SearchModel:
     """Encapsulates all components necessary to search on a database"""
@@ -16,6 +17,13 @@ class SearchModel:
             self.feature_metadata = json.load(f)
         
         self.feature_store = np.load('{}.npy'.format(features_basename))
+
+        if representation_size(self.model) != self.feature_store.shape[-1]:
+            raise ValueError('Model {} and feature store {} have nonmatching '
+                             'representation sizes: {} vs {}'.format(
+                                model, features_path,
+                                representation_size(self.model),
+                                self.feature_store.shape[-1]))
 
         if database_path:
             self.database = Database.load(database_path)
