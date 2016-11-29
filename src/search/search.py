@@ -1,26 +1,15 @@
-import os, sys
+import os
+import sys
 import argparse
+
 import numpy as np
 
-from features import compute_representation, load_image, database
-from models import load
-
-parser = argparse.ArgumentParser(description=
-                                 'Query a database for similar images')
-parser.add_argument('--database-dir', dest='database_dir',
-                    help='Folder where databases are stored',
-                    default='../database')
-parser.add_argument('--database',
-                    help='Name of the database to use')
-parser.add_argument('--model-dir', dest='model_dir',
-                    help='Folder where trained models are stored',
-                    default='../models')
-parser.add_argument('images', nargs='+', 
-                    help='One or more images to query for')
+from ..features import compute_representation, convert_image, load_image
+from .search_model import SearchModel
 
 
 def query(query_features, feature_store, top_n=0):
-    """Returns a list of indices of the most similar features"""
+    """Return a list of indices of the most similar features"""
     query_features = np.expand_dims(query_features, axis=0)
 
     # Cosine similarity measure
@@ -41,37 +30,35 @@ def query(query_features, feature_store, top_n=0):
     return indices, top_similarities
 
 
-def main(args):
-    args = parser.parse_args(args)
+def search_roi(search_model, image, roi=None, top_n=0):
+    """Query the feature store for a region of interest on an image
 
-    query_images = []
-    for image_path in args.images:
-        if os.path.exists(image_path):
-            query_images.append(image_path)
-        else:
-            print('Image {} does not exist. Skipping.'.format(image_path))
+    Args:
+        image: RGB PIL image to take roi of
+        roi: bounding box in the form of (left, upper, right, lower)
+        feature_store: features to search on
+        top_n: how many query results to return
 
-    db_path = os.path.join(args.database_dir, args.database)
-    db = database.load('{}.pkl'.format(db_path))
-    feature_store = np.load('{}.npy'.format(db_path))
+    Returns:
+        (indices, similarities), where indices is a list of top_n 
+        indices of entries in the feature_store sorted by decreasing 
+        similarity, and similarities contains the corresponding 
+        similarity value for each entry.
+    """
+    height, width = image.size
+    if roi is None:
+        x1, y1, x2, y2 = 0, 0, width, height
+    else:
+        x1, y1, x2, y2 = roi
+    x1, y1, x2, y2 = np.clip([x1, y1, x2, y2], 0,
+                             [width, height, width, height])
+    if x1 == x2 or y1 == y2:
+        raise ValueError('Region of interest out of range')
 
-    model, preprocess_fn = load(db.model_name, args.model_dir)
+    crop = image.crop((x1, y1, x2, y2))
+    crop = convert_image(crop)
+    crop = search_model.preprocess_fn(crop)
 
-    for image_path in query_images:
-        image = load_image(image_path)
-        image = preprocess_fn(image)
+    features = compute_representation(search_model.model, crop)
 
-        features = compute_representation(model, image)
-
-        top_n = 2
-        top_results, top_similarities = query(features, feature_store, top_n)
-
-        print('Top {} results for query image {}'.format(len(top_results), 
-                                                         image_path))
-        for result, similarity in zip(top_results, top_similarities):
-            result_path = db.images[result]['path']
-            print('{} - {}'.format(result_path, similarity))
-
-if __name__ == '__main__':
-    # Note: run from src/ with python3 -m search.search
-    main(sys.argv[1:])
+    return query(features, search_model.feature_store, top_n)
