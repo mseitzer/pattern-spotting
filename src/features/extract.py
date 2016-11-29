@@ -1,18 +1,4 @@
-import os, sys
-import argparse
 import numpy as np
-
-from . import database
-from models import load
-
-parser = argparse.ArgumentParser(description=
-                                 'Extract feature representations')
-parser.add_argument('--database-dir', dest='database_dir',
-                    help='Folder where results are stored',
-                    default='../database')
-parser.add_argument('--image-dir', dest='image_base_dir',
-                    help='Folder where images are read from', 
-                    default='../data/working')
 
 def _region_generator(array, size, overlap, verbose=False):
     """A generator which returns square overlapping regions"""
@@ -84,7 +70,6 @@ def compute_representation(model, image):
     """
     features = model.predict(image)
     features = np.squeeze(features, axis=0)
-    #features = np.random.rand(44, 62, 512)
 
     r_mac = _compute_r_mac(features)
     return r_mac
@@ -94,43 +79,16 @@ def representation_size(model):
     return model.layers[-1].output_shape[3]
 
 
-def load_image(image_path):
-    """Loads an image into a representation suitable to input into Keras models
-    """
+def convert_image(image):
+    """Converts an RGB PIL image to Keras input format"""
     import keras.preprocessing.image as keras_image
-    image = keras_image.load_img(image_path)
     image = keras_image.img_to_array(image)
     image = np.expand_dims(image, axis=0)
     return image
 
 
-def main(args):
-    args = parser.parse_args(args)
-
-    extensions = ['.png', '.jpg']
-    images = os.listdir(args.image_base_dir)
-    images = [img for img in images if os.path.splitext(img)[1] in extensions]
-
-    model_name = 'VGG16'  # TODO: make argument
-
-    db = database.Database(model_name)
-
-    model, preprocess_fn = load(model_name)
-
-    feature_store = np.empty((len(images), representation_size(model)))
-
-    for idx, image_name in enumerate(images):
-        image_path = os.path.join(args.image_base_dir, image_name)
-        image = load_image(image_path)
-        image = preprocess_fn(image)
-
-        features = compute_representation(model, image)
-        feature_store[idx] = features
-        db.add_image(image_name, idx)
-
-    database.save(db, os.path.join(args.database_dir, 'working.pkl'))
-    np.save(os.path.join(args.database_dir, 'working.npy'), feature_store)
-
-if __name__ == '__main__':
-    # Note: run from src/ with python3 -m features.extract
-    main(sys.argv[1:])
+def load_image(image_path):
+    """Loads an image to Keras input format"""
+    import keras.preprocessing.image as keras_image
+    image = keras_image.load_img(image_path)
+    return convert_image(image)
