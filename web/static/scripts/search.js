@@ -1,3 +1,37 @@
+var area_select = null;
+
+var image_scale_x, image_scale_y;
+
+$(document).ready(function() {
+	area_select = $('#image').imgAreaSelect({
+		handles: true,
+		onSelectChange: display_crop,
+		instance: true,
+	});
+});
+
+$('#image').on('load', function() {
+	var img = this;
+	setTimeout(function() {
+		/* This has to be put into a timeout, otherwise the correct
+		 * width and height is not yet accessible.
+		 */
+		image_scale_x = img.naturalWidth / img.width;
+		image_scale_y = img.naturalHeight / img.height;
+		area_select.setOptions({
+			minWidth: Math.round(32 / image_scale_x) || 1,
+			minHeight: Math.round(32 / image_scale_y) || 1,
+		});
+	}, 0);
+
+	$('#text_image_size').text(
+		this.naturalWidth + "px, " + this.naturalHeight + "px"
+	);
+	$(this).show();
+	$('#block_crop_selection').show();
+	$('#block_crop_selection_right').show();
+})
+.hide();
 
 $('#input_url_button').click(function() {
 	load_image_from_url($('#input_image_url').val());
@@ -7,46 +41,22 @@ $('#input_image_file').change(function() {
 	load_image_from_file(this);
 });
 
-$('#input_select_full_button').click(function() {
-	var image_node = $('#image').get(0);
-	if(area_select) {
-		area_select.setSelection(0, 0, 
-			image_node.width,
-			image_node.height);
-		area_select.setOptions({ 
-			imageWidth: image_node.width,
-			imageHeight: image_node.height,
-			show: true
-		});
-		area_select.update();
-		display_crop(image_node, area_select.getSelection());
-		update_crop(image_node, area_select.getSelection());
-	}
-});
-
-var area_select = null;
-$('#image')
-	.on('load', function() {
-		area_select = $(this).imgAreaSelect({
-			imageWidth: $(this).width(),
-			imageHeight: $(this).height(),
-			handles: true,
-			onSelectChange: display_crop,
-			onSelectEnd: update_crop,
-			instance: true
-		});
-		$(this).show();
-		$('#block_crop_selection_right').show();
-	})
-	.hide();
-
 $('#form_search').submit(function(e) {
 	e.preventDefault();
 	search_image();
 	return false;
 });
 
-$('#block_crop_selection_right').hide();
+$('#block_crop_selection').hide();
+
+function compute_bounding_box(img, selection) {
+	return [
+		Math.round(selection.x1 * image_scale_x),
+		Math.round(selection.y1 * image_scale_y),
+		Math.round(selection.x2 * image_scale_x),
+		Math.round(selection.y2 * image_scale_y)
+	];
+}
 
 function display_crop(img, selection) {
 	var crop_block_node = $('#block_crop_image');
@@ -58,15 +68,20 @@ function display_crop(img, selection) {
 		marginLeft: '-' + Math.round(crop_scale_x * selection.x1) + 'px',
 		marginTop: '-' + Math.round(crop_scale_y * selection.y1) + 'px'
 	}).show();
+
+	var bounding_box = compute_bounding_box(img, selection);
+	$('#text_crop_params').text(
+		  bounding_box[0] + ":" + bounding_box[2] + ", " 
+		+ bounding_box[1] + ":" + bounding_box[3]
+	);
 }
 
 function update_crop(img, selection) {
-	var image_scale_x = img.naturalWidth / img.width;
-	var image_scale_y = img.naturalHeight / img.height;
-	$('#input_crop_x1').val(Math.round(selection.x1 * image_scale_x));
-	$('#input_crop_y1').val(Math.round(selection.y1 * image_scale_y));
-	$('#input_crop_x2').val(Math.round(selection.x2 * image_scale_x));
-	$('#input_crop_y2').val(Math.round(selection.y2 * image_scale_y));
+	var bounding_box = compute_bounding_box(img, selection);
+	$('#input_crop_x1').val(bounding_box[0]);
+	$('#input_crop_y1').val(bounding_box[1]);
+	$('#input_crop_x2').val(bounding_box[2]);
+	$('#input_crop_y2').val(bounding_box[3]);
 }
 
 function load_image_from_url(url) {
@@ -77,6 +92,10 @@ function load_image_from_url(url) {
 	$('#image').hide();
 	$('#input_search_url').val("");
 	$('#input_image_file').val("");
+	if(area_select) {
+		area_select.setOptions({hide: true});
+		area_select.update();
+	}
 
 	var img = new Image();
 	img.onload = function() {
@@ -98,6 +117,10 @@ function load_image_from_file(file_node) {
 
 	$('#image').hide();
 	$('#input_search_url').val("");
+	if(area_select) {
+		area_select.setOptions({hide: true});
+		area_select.update();
+	}
 
 	var reader = new FileReader();
 	$(reader).on('load', function(e) {
@@ -122,6 +145,9 @@ function search_image() {
 	if(!fd.has('file') && !fd.has('url')) {
 		return;
 	}
+
+	var selection = area_select.getSelection();
+	update_crop($('#image').get(0), selection);
 
 	if(fd.get('x1') === "" 
 		|| fd.get('y1') === "" 

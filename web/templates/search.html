@@ -1,34 +1,34 @@
 {% extends "layout.html" %}
 {% block head %}
-    {{ super() }}
-    <style type="text/css">
-        .important { color: #336699; }
-        .block_crop_selection {
-        	display: flex;
-        	margin-top: 2em;
-        	overflow: hidden;
-        }
-        .block_selection_image {
-        	overflow: hidden;
-        	width: 20em;
-        	height: 20em;
-        }
-        .block_crop_selection_right {
-        	margin-left: 2em;
-        }
-        .block_crop_image {
-        	margin-top: 1em;
-        	margin-bottom: 1em;
-        	position: relative;
-        	overflow: hidden;
-        	width: 100px;
-        	height: 100px;
-        }
-    </style>
-    <link rel="stylesheet" type="text/css" href="static/css/imgareaselect-default.css" />
-  	<script type="text/javascript" src="static/scripts/jquery-3.1.1.min.js"></script>
-  	<script type="text/javascript" src="static/scripts/jquery.imgareaselect.pack.js"></script>
-  	<script type="text/javascript" src="static/scripts/search.js" defer></script>
+	{{ super() }}
+	<style type="text/css">
+		li {
+			font-size: 0.8em;
+			line-height: 1.22em;
+		}
+		.important { color: #336699; }
+		.block_crop_selection {
+			display: flex;
+		}
+		.block_selection_image {
+			width: 20em;
+		}
+		.block_crop_selection_right {
+			margin-left: 2em;
+		}
+		.block_crop_image {
+			margin-top: 1em;
+			margin-bottom: 1em;
+			position: relative;
+			overflow: hidden;
+			width: 100px;
+			height: 100px;
+		}
+	</style>
+	<link rel="stylesheet" type="text/css" href="static/css/imgareaselect-default.css" />
+	<script type="text/javascript" src="static/scripts/jquery-3.1.1.min.js"></script>
+	<script type="text/javascript" src="static/scripts/jquery.imgareaselect.pack.js"></script>
+	<script type="text/javascript" src="static/scripts/search.js" defer></script>
 {% endblock %}
 {% block content %}
 	<div id="block_image_selection">
@@ -37,17 +37,24 @@
 		<h3>Select an image by URL</h3>
 		<input type="url" id="input_image_url" name="image_url" size="50" />
 		<input type="button" id="input_url_button" value="Get image" />
+		<hr />
 	</div>
 	<div id="block_crop_selection" class="block_crop_selection">
 		<div id="block_selection_image" class="block_selection_image">
+			<p>Chosen image:</p>
 			<img id="image" style="max-width:100%; max-height:100%;" />
 		</div>
 		<div id="block_crop_selection_right" class="block_crop_selection_right">
-			Selection preview
+			<p>Selection preview</p>
 			<div id="block_crop_image" class="block_crop_image">
 				<img id="crop" style="position: relative;" />
 			</div>
-			<input type="button" id="input_select_full_button" value="Select full image" />
+			<div id="block_crop_info">
+				<ul>
+					<li>Width, height: <span id="text_image_size"></span></li>
+					<li>Crop (x1:x2, y1:y2): <span id="text_crop_params"></span></li>
+				</ul>
+			</div>
 			<form method="post" id="form_search">
 				<input type="submit" value="Search with this crop" />
 				<input type="url" id="input_search_url" name="url" style="display: none" />
@@ -58,5 +65,4 @@
 			</form>
 		</div>
 	</div>
-
 {% endblock %}
