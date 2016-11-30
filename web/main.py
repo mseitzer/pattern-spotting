@@ -111,9 +111,6 @@ def search():
     try:
         indices, scores = search_roi(search_model, image, bounding_box, 5)
     except ValueError as e:
-        import traceback
-        traceback.print_tb(e.__traceback__)
-        print(e)
         raise InvalidUsage('Invalid bounding box parameter, internal', 400)
 
     # TODO: compute bounding boxes on result images
@@ -129,11 +126,9 @@ def search():
 
         image_dict = {
             'image': image_path,
-            'score': score
+            'score': round(score, 4),
+            'url': image_info.get('url', '')
         }
-
-        if 'url' in image_info:
-            image_dict['url'] = image_info['url']
 
         res_list.append(image_dict)
 
@@ -144,9 +139,13 @@ if __name__ == "__main__":
 
     with open(args.config, 'r') as f:
         config = json.load(f)
-        print(config)
 
     search_model = SearchModel(config['model'],
                                config['features'],
                                config['database'])
+    
+    print('Server running with model "{}", features "{}" ' 
+          'and image database "{}".'.format(config['model'], 
+                                            config['features'], 
+                                            config['database']))
     app.run()

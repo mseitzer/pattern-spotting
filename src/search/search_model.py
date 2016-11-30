@@ -37,7 +37,6 @@ class SearchModel:
         return self.feature_metadata[str(feature_idx)]
 
     def query_database(self, image):
-        print(self.database.images)
         if self.database:
             return self.database.images.get(image) 
         return None
