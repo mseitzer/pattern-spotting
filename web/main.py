@@ -1,21 +1,31 @@
+#!/usr/bin/env python3
 import sys
 import os
 import io
 import time
+import json
+import argparse
+
 import requests
 from PIL import Image
 from flask import Flask, request, render_template, jsonify
 
 # Path hack to be able to import from sibling directory
-sys.path.append(os.path.abspath('../src'))
-#from models import load
+sys.path.append(os.path.abspath(os.path.split(os.path.realpath(__file__))[0]
+                                + '/..'))
+from src.search import SearchModel, search_roi
 
 MAX_FILE_SIZE = 16*1024*1024  # Maximum upload size 16MB
 URL_TIMEOUT = 5  # Maximum time in seconds to wait for connection opening
 
-app = Flask(__name__)
+app = Flask('Historical object retrieval')
 app.debug = True
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
+
+parser = argparse.ArgumentParser(description=
+                                 'Historical object retrieval web backend')
+parser.add_argument('--config', default='config.txt',
+                    help='Configuration file containing database paths')
 
 class InvalidUsage(Exception):
     def __init__(self, message, status_code=400, payload=None):
@@ -82,9 +92,9 @@ def search():
         raise InvalidUsage('Invalid bounding box parameter', 400)
 
     img_file = None
-    if 'file' in request.files:
+    if 'file' in request.files:  # Image upload
         img_file = request.files['file']
-    elif 'url' in request.form:
+    elif 'url' in request.form:  # External image
         url = request.form['url']
         img_file = download_file(url)
         if not img_file:
@@ -94,14 +104,49 @@ def search():
         raise InvalidUsage('No image source', 400)
 
     try:
-        img = Image.open(img_file)
+        image = Image.open(img_file)
     except (IOError, OSError):
         raise InvalidUsage('Error decoding image', 415)
 
-    # TODO: implement search on bounding box in src/search/search.py
-    # Maybe wrap database obj etc. in class
-    return "test"
+    try:
+        indices, scores = search_roi(search_model, image, bounding_box, 5)
+    except ValueError as e:
+        import traceback
+        traceback.print_tb(e.__traceback__)
+        print(e)
+        raise InvalidUsage('Invalid bounding box parameter, internal', 400)
+
+    # TODO: compute bounding boxes on result images
+
+    # Build response
+    res_list = []
+    for index, score in zip(indices, scores):
+        image_path = search_model.get_metadata(index)['image']
+        image_info = search_model.query_database(image_path)
+        if image_info is None:
+            print('Warning: result image {} not found in db'.format(image_path))
+            continue
+
+        image_dict = {
+            'image': image_path,
+            'score': score
+        }
+
+        if 'url' in image_info:
+            image_dict['url'] = image_info['url']
+
+        res_list.append(image_dict)
+
+    return jsonify(**{'results': res_list})
 
 if __name__ == "__main__":
-    # TODO: load databases on startup
+    args = parser.parse_args(sys.argv[1:])
+
+    with open(args.config, 'r') as f:
+        config = json.load(f)
+        print(config)
+
+    search_model = SearchModel(config['model'],
+                               config['features'],
+                               config['database'])
     app.run()

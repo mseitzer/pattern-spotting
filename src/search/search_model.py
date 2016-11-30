@@ -12,6 +12,9 @@ class SearchModel:
     def __init__(self, model, features_path, database_path=None):
         self.model, self.preprocess_fn = load_model(model)
 
+        # Avoid Keras lazy predict function construction
+        self.model._make_predict_function()
+
         features_basename, _ = os.path.splitext(features_path)
         with open('{}.meta'.format(features_basename), 'r') as f:
             self.feature_metadata = json.load(f)
@@ -30,6 +33,11 @@ class SearchModel:
         else:
             self.database = None
         
-
     def get_metadata(self, feature_idx):
         return self.feature_metadata[str(feature_idx)]
+
+    def query_database(self, image):
+        print(self.database.images)
+        if self.database:
+            return self.database.images.get(image) 
+        return None
