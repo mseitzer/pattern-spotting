@@ -24,6 +24,17 @@
 			width: 100px;
 			height: 100px;
 		}
+		.block_results_images {
+			display: flex;
+			flex-wrap: wrap;
+		}
+		.block_result {
+			margin: 0 auto;
+		}
+		.result_image {
+			width: 2em;
+			height: 2em;
+		}
 	</style>
 	<link rel="stylesheet" type="text/css" href="static/css/imgareaselect-default.css" />
 	<script type="text/javascript" src="static/scripts/jquery-3.1.1.min.js"></script>
@@ -64,5 +75,10 @@
 				<input type="hidden" id="input_crop_y2" name="y2" />
 			</form>
 		</div>
+	</div>
+	<div id="block_results">
+		<hr />
+		<h3>Search results</h3>
+		<div id="block_results_images" class="block_results_images"></div>
 	</div>
 {% endblock %}

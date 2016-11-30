@@ -48,6 +48,7 @@ $('#form_search').submit(function(e) {
 });
 
 $('#block_crop_selection').hide();
+$('#block_results').hide();
 
 function compute_bounding_box(img, selection) {
 	return [
@@ -90,6 +91,7 @@ function load_image_from_url(url) {
 	}
 
 	$('#image').hide();
+	$('#block_results').hide();
 	$('#input_search_url').val("");
 	$('#input_image_file').val("");
 	if(area_select) {
@@ -116,6 +118,7 @@ function load_image_from_file(file_node) {
 	// TODO: file name extension validation
 
 	$('#image').hide();
+	$('#block_results').hide();
 	$('#input_search_url').val("");
 	if(area_select) {
 		area_select.setOptions({hide: true});
@@ -147,6 +150,7 @@ function search_image() {
 	}
 
 	var selection = area_select.getSelection();
+	console.log(selection);
 	update_crop($('#image').get(0), selection);
 
 	if(fd.get('x1') === "" 
@@ -156,17 +160,32 @@ function search_image() {
 		return;
 	}
 
+	$('#block_results').hide();
 	$.ajax({
 		url: 'search',
 		type: 'POST',
+		dataType: 'json',
 		data: fd,
 		processData: false,
 		contentType: false
 	}).done(function(response, xhr) {
-		console.log(response);
+		display_results(response['results']);	
 	}).fail(function(xhr, status, error) {
 		// TODO: error handling
 		console.log(status);
 		console.log(error);
 	});
+}
+
+function display_results(images) {
+	$('#block_results_images').empty();
+	for(image of images) {
+		var div = '<div class="block_result"><p>' + image.image + '</p>';
+		if(image.url) {
+			div += '<img src="' + url + '" class="result_image">';
+		}
+		div += image.score + '</div>';
+		$('#block_results_images').append(div);
+	}
+	$('#block_results').show();
 }
