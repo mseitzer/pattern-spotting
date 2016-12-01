@@ -11,7 +11,7 @@ from src.database import Database
 
 parser = argparse.ArgumentParser(description=
                                  'Modify an image database')
-parser.add_argument('command', choices=['CREATE', 'ADD', 'LIST'],
+parser.add_argument('command', choices=['create', 'add', 'list'],
                     help='Action to execute')
 parser.add_argument('--root-dir', dest='root_dir', default=None, 
                     help='Directory to which relatives paths are taken')
@@ -36,27 +36,24 @@ def add_from_folder(db, folder, root_dir=None):
         db.add_image(image)
 
 
-def add_from_csv(db, csv_file, root_dir=None):
+def add_from_csv(db, csv_file):
     with open(csv_file, 'r') as f:
         fieldnames = ['path', 'url', 'date']
-        reader = csv.DictReader(f, fieldnames=fieldnames)
+        reader = csv.DictReader(f, fieldnames=fieldnames, delimiter=';')
         for row in reader:
-            path = row['path']
-            if root_dir:
-                path = os.path.relpath(row['path'], root_dir)
-            img = db.add_image(path)
+            img = db.add_image(row['path'])
             img['url'] = row['url']
 
 
 def main(args):
     args = parser.parse_args(args)
 
-    if args.command == 'CREATE':
+    if args.command == 'create':
         db = Database(os.path.basename(args.database))
-    elif args.command in ['ADD', 'LIST']:
+    elif args.command in ['add', 'list']:
         db = Database.load(args.database)
 
-    if args.command == 'LIST':
+    if args.command == 'list':
         print('Database {} contains {} images'.format(db.name, len(db)))
         for path, data in db.iter_images():
             print(path)
@@ -73,7 +70,7 @@ def main(args):
     if os.path.isdir(args.input):
         add_from_folder(db, args.input, args.root_dir)
     elif os.path.splitext(args.input)[1] == '.csv':
-        add_from_csv(db, args.input, args.root_dir)
+        add_from_csv(db, args.input)
     else:
         print('Could not interpret input {}'.format(args.input))
 
