@@ -36,10 +36,10 @@ def download_images(folder, images):
 def construct_index(f, folder, charters):
     for charter in charters:
         url = urllib.parse.urlparse(charter['imageFile'])
-        external_url = charter['url']
-        image_name = os.path.basename(url.path)
-        f.write('{}/{};{};{}\n'.format(folder, image_name, 
-                                       external_url, 
+        image_path = '{}/{}'.format(folder, os.path.basename(url.path))
+        f.write('{}/{};{};{}\n'.format(image_path, 
+                                       charter['imageFile'],
+                                       charter['url'], 
                                        charter['date']))
 
 

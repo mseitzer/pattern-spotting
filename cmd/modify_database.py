@@ -38,11 +38,12 @@ def add_from_folder(db, folder, root_dir=None):
 
 def add_from_csv(db, csv_file):
     with open(csv_file, 'r') as f:
-        fieldnames = ['path', 'url', 'date']
+        fieldnames = ['path', 'url', 'external_url', 'date']
         reader = csv.DictReader(f, fieldnames=fieldnames, delimiter=';')
         for row in reader:
             img = db.add_image(row['path'])
             img['url'] = row['url']
+            img['external_url'] = row['external_url']
 
 
 def main(args):
