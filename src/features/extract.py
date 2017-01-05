@@ -25,30 +25,40 @@ def _region_generator(array, size, overlap, verbose=False):
         row = round(row + (1 - overlap) * (row + size))
 
 
-def _compute_r_mac(features, verbose=False):
+def _compute_mac(features):
+    """
+    Computes maximum activations of convolutions, which is the 
+    maximum across the spatial dimensions of the features.
+    """
+    return np.amax(features, axis=(0,1))
+
+
+def _compute_r_mac(features, scales=(1, 4), verbose=False):
     """
     Computes regional maximum activations of convolutions
-    (see arXiv:1511.05879)
+    (see arXiv:1511.05879v2)
+
+    scales: inclusive interval from which the scale parameter l is chosen from, 
+    where l=1 is a square region filling the whole image. Higher scales result 
+    in smaller regions following the formula given in the paper on p.4
     """
     def normalize(v):
         return v / np.linalg.norm(v, 2)
 
     assert len(features.shape) == 3
 
-    min_scale = 1
-    max_scale = 4
     height, width = features.shape[0], features.shape[1]
 
     r_mac = np.zeros(features.shape[2])  # Sum of all regional features
 
-    for scale in range(min_scale, max_scale+1):
+    for scale in range(scales[0], scales[1]+1):
         r_size = round(2 * min(height, width) / (scale + 1))
         if verbose:
             print('Region width at scale {}: {}'.format(scale, r_size))
 
         # Uniform sampling of square regions with 40% overlap
         for region in _region_generator(features, r_size, 0.4):
-            max_region_activations = np.amax(region, axis=(0,1))
+            max_region_activations = _compute_mac(features)
 
             # L2 normalization
             max_region_activations = normalize(max_region_activations)
@@ -70,7 +80,6 @@ def compute_representation(model, image):
     """
     features = model.predict(image)
     features = np.squeeze(features, axis=0)
-
     r_mac = _compute_r_mac(features)
     return r_mac
 
