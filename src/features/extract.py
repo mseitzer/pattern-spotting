@@ -1,5 +1,10 @@
 import numpy as np
 
+def _normalize(v):
+    """L2 normalization of vector"""
+    return v / np.linalg.norm(v, 2)
+
+
 def _region_generator(array, size, overlap, verbose=False):
     """A generator which returns square overlapping regions"""
     height, width = array.shape[0], array.shape[1]
@@ -33,7 +38,7 @@ def _compute_mac(features):
     return np.amax(features, axis=(0,1))
 
 
-def _compute_r_mac(features, scales=(1, 4), verbose=False):
+def compute_r_macs(features, scales=(1, 4)):
     """
     Computes regional maximum activations of convolutions
     (see arXiv:1511.05879v2)
@@ -42,15 +47,10 @@ def _compute_r_mac(features, scales=(1, 4), verbose=False):
     where l=1 is a square region filling the whole image. Higher scales result 
     in smaller regions following the formula given in the paper on p.4
     """
-    def normalize(v):
-        return v / np.linalg.norm(v, 2)
-
     assert len(features.shape) == 3
-
     height, width = features.shape[0], features.shape[1]
 
-    r_mac = np.zeros(features.shape[2])  # Sum of all regional features
-
+    r_macs = []
     for scale in range(scales[0], scales[1]+1):
         r_size = round(2 * min(height, width) / (scale + 1))
         if verbose:
@@ -58,20 +58,36 @@ def _compute_r_mac(features, scales=(1, 4), verbose=False):
 
         # Uniform sampling of square regions with 40% overlap
         for region in _region_generator(features, r_size, 0.4):
-            max_region_activations = _compute_mac(features)
+            r_mac = _compute_mac(features)
 
             # L2 normalization
-            max_region_activations = normalize(max_region_activations)
+            r_mac = _normalize(r_mac)
 
-            # TODO: PCA whitening, see sklearn.decomposition.PCA 
-            # TODO: another L2 normalization
+            r_macs.append(r_mac)
+    return r_macs
 
-            r_mac += max_region_activations
+
+def _compute_global_r_mac(features, pca=None):
+    """
+    Computes global aggregation of rmacs from convolutional features
+
+    pca (optional): sklearn.decomposition.PCA object which is applied to each 
+    mac to whiten the data
+    """
+    assert len(features.shape) == 3
+    
+    global_r_mac = np.zeros(features.shape[2])  # Sum of all regional features
+    macs = compute_r_macs(features)
+    
+    for mac in macs:
+        if pca:
+            mac = pca.transform(mac)
+            mac = _normalize(mac)
+        global_r_mac += mac
 
     # Final L2 normalization
-    r_mac = normalize(r_mac)
-
-    return r_mac
+    global_r_mac = _normalize(global_r_mac)
+    return global_r_mac
 
 
 def compute_representation(model, image):
