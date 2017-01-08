@@ -5,6 +5,9 @@ import os
 import subprocess
 import sys
 
+proj_dir = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]
+                           + '/..')
+
 # Defines all unit test scripts
 tests = [
     'src/features/test_extract.py'
@@ -13,7 +16,7 @@ tests = [
 def main(args):
     results = []
     for test in tests:
-        cwd = os.path.join('..', os.path.dirname(test))
+        cwd = os.path.join(proj_dir, os.path.dirname(test))
         file = os.path.basename(test)
 
         res = subprocess.call(["python", file], cwd=cwd)
