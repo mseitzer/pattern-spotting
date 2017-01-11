@@ -10,7 +10,8 @@ proj_dir = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]
 
 # Defines all unit test scripts
 tests = [
-    'src/features/test_extract.py'
+    'src/features/test_extract.py',
+    'src/search/test_localization.py'
 ]
 
 def main(args):
