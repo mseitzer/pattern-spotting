@@ -4,7 +4,8 @@ import argparse
 
 import numpy as np
 
-from ..features import compute_representation, convert_image, load_image
+from ..features import compute_features, compute_representation, \
+                       convert_image, load_image
 from .search_model import SearchModel
 
 
@@ -26,7 +27,7 @@ def query(query_features, feature_store, top_n=0):
     """Query stored features for similarity against a passed feature
 
     Args:
-        query_features: Feature to query for, shape (dim,)
+        query_features: Feature to query for, shape (1, dim)
         feature_store: 2D-array of n features to compare to, shape (n, dim)
         top_n:  if zero, return all results in descending order
                 if positive, return only the best top_n results
@@ -38,8 +39,6 @@ def query(query_features, feature_store, top_n=0):
         similarity, and similarities contains the corresponding 
         similarity value for each entry.
     """
-    query_features = np.expand_dims(query_features, axis=0)
-
     # Cosine similarity measure
     similarity = feature_store.dot(query_features.T).flatten()
 
@@ -81,6 +80,7 @@ def search_roi(search_model, image, roi=None, top_n=0):
     crop = convert_image(crop)
     crop = search_model.preprocess_fn(crop)
 
-    features = compute_representation(search_model.model, crop)
+    features = compute_features(search_model.model, crop)
+    representation = compute_representation(features, search_model.pca)
 
-    return query(features, search_model.feature_store, top_n)
+    return query(representation, search_model.feature_store, top_n)
