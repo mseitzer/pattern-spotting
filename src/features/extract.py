@@ -97,7 +97,12 @@ def _compute_global_r_mac(features, pca=None):
 
 
 def compute_features(model, image):
-    """Computes convolutional feature map of image"""
+    """Computes convolutional feature map of image
+    
+    Returns:
+    Convolutional feature map of shape (height, width, depth), where the 
+    exact shape components depend on the used model.
+    """
     features = model.predict(image)
     features = np.squeeze(features, axis=0)
     return features
@@ -129,7 +134,11 @@ def convert_image(image):
 
 
 def load_image(image_path):
-    """Loads an image to Keras input format"""
+    """Loads an image to Keras input format
+
+    Returns:
+    The image as a numpy array of the shape (height, width, channels)
+    """
     import keras.preprocessing.image as keras_image
     image = keras_image.load_img(image_path)
     return convert_image(image)
