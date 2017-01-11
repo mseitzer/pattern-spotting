@@ -1,5 +1,5 @@
 {
 	"model": "VGG16",
-	"features": "../features/working.npy",
+	"features": "../features/working",
 	"database": "../database/working.db"
 }

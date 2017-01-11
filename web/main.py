@@ -111,7 +111,11 @@ def search():
     try:
         indices, scores = search_roi(search_model, image, bounding_box, 5)
     except ValueError as e:
-        raise InvalidUsage('Invalid bounding box parameter, internal', 400)
+        print('Error while searching for roi: {}'.format(e))
+        if app.debug:
+            import traceback
+            traceback.print_tb(e.__traceback__)
+        raise InvalidUsage('Internal error while searching', 400)
 
     # TODO: compute bounding boxes on result images
 
