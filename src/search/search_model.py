@@ -2,6 +2,7 @@ import os
 import json
 
 import numpy as np
+from sklearn.externals import joblib
 
 from ..database import Database
 from ..models import load_model
@@ -15,11 +16,15 @@ class SearchModel:
         # Avoid Keras lazy predict function construction
         self.model._make_predict_function()
 
-        features_basename, _ = os.path.splitext(features_path)
-        with open('{}.meta'.format(features_basename), 'r') as f:
+        features_basename = os.path.basename(features_path)
+        meta_file_path = os.path.join(features_path,
+                                      '{}.meta'.format(features_basename))
+        with open(meta_file_path, 'r') as f:
             self.feature_metadata = json.load(f)
         
-        self.feature_store = np.load('{}.npy'.format(features_basename))
+        repr_file_path = os.path.join(features_path,
+                                      '{}.repr.npy'.format(features_basename))
+        self.feature_store = np.load(repr_file_path)
 
         if representation_size(self.model) != self.feature_store.shape[-1]:
             raise ValueError('Model {} and feature store {} have nonmatching '
@@ -27,6 +32,13 @@ class SearchModel:
                                 model, features_path,
                                 representation_size(self.model),
                                 self.feature_store.shape[-1]))
+
+        pca_file_path = os.path.join(features_path,
+                                     '{}.pca'.format(features_basename))
+        if os.path.isfile(pca_file_path):
+            self.pca = joblib.load(pca_file_path)
+        else:
+            self.pca = None
 
         if database_path:
             self.database = Database.load(database_path)
