@@ -44,7 +44,7 @@ def extract_conv_features(name, model, features_dir, image_dir, root_dir):
     image_dir = os.path.abspath(image_dir)
 
     out_dir = join(features_dir, 'features/')
-    if exists(out_dir):
+    if not exists(out_dir):
         os.mkdir(out_dir)
 
     extensions = ['.png', '.jpg']
@@ -67,7 +67,9 @@ def extract_conv_features(name, model, features_dir, image_dir, root_dir):
 
         np.save(join(out_dir, os.path.basename(image_name)), features)
         meta_data[idx] = {
-            'image': os.path.relpath(image_path, root_dir)
+            'image': os.path.relpath(image_path, root_dir),
+            'height': image.shape[1],
+            'width': image.shape[2]
         }
 
     meta_file_name = '{}.meta'.format(name)
@@ -137,7 +139,7 @@ def main(args):
     if args.root_dir:
         args.root_dir = os.path.abspath(args.root_dir)
 
-    if not os.path.exists(args.features_dir):
+    if not exists(args.features_dir):
         os.mkdir(args.features_dir)
 
     if args.command == 'features':
