@@ -76,7 +76,7 @@ def _integral_image_sum(integral_image, area):
 
 def localize(query, 
              features, 
-             query_shape, 
+             query_image_shape, 
              step_size=3, 
              aspect_ratio_factor=1.1):
     """Finds a bounding box for the query representation in the features
@@ -88,19 +88,20 @@ def localize(query,
     query: representation of the object to find of shape (1, dim)
     features: convolutional feature map of the image to localize in, 
         of shape (height, width, dim)
-    query_shape: shape of the original query image 
+    query_image_shape: shape of the original query image 
         in the form of (height, width, channels)
     step_size, aspect_ratio_factor: area parameters
 
     Returns: bounding box on features fitting best to the query, 
         in the form of (left, upper, right, lower)
     """
+    assert len(query_image_shape) == 3
     assert query.shape[-1] == features.shape[-1]
     # Exponent to use in approximate max pooling. 
     # According to the paper, 10 is a good choice.
     exp = 10.0
 
-    query_aspect_ratio = query_shape[1] / query_shape[0]
+    query_aspect_ratio = query_image_shape[1] / query_image_shape[0]
     query_l2norm = np.linalg.norm(query, ord=2)
 
     integral_image = _compute_integral_image(features, exp)
@@ -114,6 +115,7 @@ def localize(query,
         max_pool_l2norm = np.linalg.norm(max_pool, ord=2, axis=0)
 
         score = max_pool.dot(query.T) / query_l2norm / max_pool_l2norm
+
         if score > best_area_score:
             best_area_score = score
             best_area = area
