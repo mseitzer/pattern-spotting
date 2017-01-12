@@ -109,7 +109,7 @@ def search():
         raise InvalidUsage('Error decoding image', 415)
 
     try:
-        indices, scores = search_roi(search_model, image, bounding_box, 5)
+        indices, scores, bboxes = search_roi(search_model, image, bounding_box)
     except ValueError as e:
         print('Error while searching for roi: {}'.format(e))
         if app.debug:
@@ -117,21 +117,21 @@ def search():
             traceback.print_tb(e.__traceback__)
         raise InvalidUsage('Internal error while searching', 400)
 
-    # TODO: compute bounding boxes on result images
-
     # Build response
     res_list = []
-    for index, score in zip(indices, scores):
+    N = 5
+    for index, score, bbox in zip(indices[:N], scores[:N], bboxes[:N]):
         image_path = search_model.get_metadata(index)['image']
         image_info = search_model.query_database(image_path)
         if image_info is None:
             print('Warning: result image {} not found in db'.format(image_path))
             continue
-
         image_dict = {
             'image': image_path,
             'score': round(score, 4),
-            'url': image_info.get('url', '')
+            'url': image_info.get('url', ''),
+            'bbox': {'x1': bbox[0], 'y1': bbox[1],
+                     'x2': bbox[2], 'y2': bbox[3]}
         }
 
         res_list.append(image_dict)
