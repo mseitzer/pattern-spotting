@@ -1,5 +1,5 @@
-import os
 import json
+from os.path import basename, join, isfile
 
 import numpy as np
 from sklearn.externals import joblib
@@ -11,19 +11,21 @@ from ..features import representation_size
 class SearchModel:
     """Encapsulates all components necessary to search on a database"""
     def __init__(self, model, features_path, database_path=None):
+        # Load the extraction model
         self.model, self.preprocess_fn = load_model(model)
-
         # Avoid Keras lazy predict function construction
         self.model._make_predict_function()
 
-        features_basename = os.path.basename(features_path)
-        meta_file_path = os.path.join(features_path,
-                                      '{}.meta'.format(features_basename))
+        # Load the feature metadata
+        features_basename = basename(features_path)
+        meta_file_path = join(features_path, 
+                              '{}.meta'.format(features_basename))
         with open(meta_file_path, 'r') as f:
             self.feature_metadata = json.load(f)
         
-        repr_file_path = os.path.join(features_path,
-                                      '{}.repr.npy'.format(features_basename))
+        # Load image representations
+        repr_file_path = join(features_path, 
+                              '{}.repr.npy'.format(features_basename))
         self.feature_store = np.load(repr_file_path)
 
         if representation_size(self.model) != self.feature_store.shape[-1]:
@@ -33,13 +35,25 @@ class SearchModel:
                                 representation_size(self.model),
                                 self.feature_store.shape[-1]))
 
-        pca_file_path = os.path.join(features_path,
-                                     '{}.pca'.format(features_basename))
-        if os.path.isfile(pca_file_path):
+        # Construct paths to feature files
+        self.feature_file_paths = []
+        features_sub_folder = join(features_path, 'features/')
+        for idx, metadata in enumerate(self.feature_metadata):
+            image_name = basename(self.feature_metadata[str(idx)]['image'])
+            path = join(features_sub_folder, '{}.npy'.format(image_name))
+            if isfile(path):
+                self.feature_file_paths.append(path)
+            else:
+                print('Missing feature file for image {}'.format(image_name))
+
+        # Load PCA
+        pca_file_path = join(features_path, '{}.pca'.format(features_basename))
+        if isfile(pca_file_path):
             self.pca = joblib.load(pca_file_path)
         else:
             self.pca = None
 
+        # Load image database
         if database_path:
             self.database = Database.load(database_path)
         else:
@@ -47,6 +61,10 @@ class SearchModel:
         
     def get_metadata(self, feature_idx):
         return self.feature_metadata[str(feature_idx)]
+
+    def get_features(self, feature_idx):
+        feature_file_path = self.feature_file_paths[feature_idx]
+        return np.load(feature_file_path)
 
     def query_database(self, image):
         if self.database:
