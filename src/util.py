@@ -1,0 +1,40 @@
+import numpy as np
+import keras.preprocessing.image as keras_image
+
+
+def crop_image(image, bounding_box):
+    """Crops a PIL image to a bounding box. 
+    
+    Performs bounding box size verification. 
+    Args:
+    bounding_box: Bounding box in the form of (left, upper, right, lower). 
+        If bounding_box is None, no action is performed.
+    """
+    height, width = image.size
+    if bounding_box is None:
+        x1, y1, x2, y2 = 0, 0, width, height
+    else:
+        x1, y1, x2, y2 = bounding_box
+    x1, y1, x2, y2 = np.clip([x1, y1, x2, y2], 0,
+                             [width, height, width, height])
+    if x1 == x2 or y1 == y2:
+        raise ValueError('Region of interest out of range')
+
+    return image.crop((x1, y1, x2, y2))
+
+
+def convert_image(image):
+    """Converts an RGB PIL image to Keras input format"""
+    image = keras_image.img_to_array(image)
+    image = np.expand_dims(image, axis=0)
+    return image
+
+
+def load_image(image_path):
+    """Loads an image to Keras input format
+
+    Returns:
+    The image as a numpy array of the shape (height, width, channels)
+    """
+    image = keras_image.load_img(image_path)
+    return convert_image(image)

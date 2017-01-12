@@ -123,22 +123,3 @@ def compute_representation(features, pca=None):
 def representation_size(model):
     # Note that this does not work for both Tensorflow and Theano backends
     return model.layers[-1].output_shape[3]
-
-
-def convert_image(image):
-    """Converts an RGB PIL image to Keras input format"""
-    import keras.preprocessing.image as keras_image
-    image = keras_image.img_to_array(image)
-    image = np.expand_dims(image, axis=0)
-    return image
-
-
-def load_image(image_path):
-    """Loads an image to Keras input format
-
-    Returns:
-    The image as a numpy array of the shape (height, width, channels)
-    """
-    import keras.preprocessing.image as keras_image
-    image = keras_image.load_img(image_path)
-    return convert_image(image)

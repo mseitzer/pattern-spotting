@@ -4,8 +4,8 @@ import argparse
 
 import numpy as np
 
-from ..features import compute_features, compute_representation, \
-                       convert_image, load_image
+from ..util import crop_image, convert_image
+from ..features import compute_features, compute_representation
 from .search_model import SearchModel
 
 
@@ -66,18 +66,7 @@ def search_roi(search_model, image, roi=None, top_n=0):
         similarity, and similarities contains the corresponding 
         similarity value for each entry.
     """
-    height, width = image.size
-    if roi is None:
-        x1, y1, x2, y2 = 0, 0, width, height
-    else:
-        x1, y1, x2, y2 = roi
-    x1, y1, x2, y2 = np.clip([x1, y1, x2, y2], 0,
-                             [width, height, width, height])
-    if x1 == x2 or y1 == y2:
-        raise ValueError('Region of interest out of range')
-
-    crop = image.crop((x1, y1, x2, y2))
-    crop = convert_image(crop)
+    crop = convert_image(crop_image(image, roi))
     crop = search_model.preprocess_fn(crop)
 
     features = compute_features(search_model.model, crop)

@@ -12,11 +12,12 @@ from sklearn.externals import joblib
 # Path hack to be able to import from sibling directory
 sys.path.append(os.path.abspath(os.path.split(os.path.realpath(__file__))[0]
                                 + '/..'))
+
+from src.util import load_image
 from src.models import load_model
 from src.features import compute_features, \
                          compute_r_macs, \
-                         compute_representation, \
-                         load_image
+                         compute_representation
 
 parser = argparse.ArgumentParser(description=
                                  'Extract feature representations')
