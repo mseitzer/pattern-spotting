@@ -6,6 +6,9 @@
 			font-size: 0.8em;
 			line-height: 1.22em;
 		}
+		p {
+			margin-top: 0em;
+		}
 		.important { color: #336699; }
 		.block_crop_selection {
 			display: flex;
@@ -25,17 +28,79 @@
 			height: 100px;
 		}
 		.block_results_images {
-			display: flex;
-			flex-wrap: wrap;
+			display: block;
 		}
 		.block_result {
-			margin: 0 auto;
+			display: flex;
+			flex-wrap: wrap;
+			margin-bottom: 1em;
+		}
+		.block_result_image {
+			height: 5em;
+			width: 5em;
+		}
+		.block_result_info {
+
 		}
 		.result_image {
-			width: 2em;
-			height: 2em;
+			width: 100%;
+			height: 100%;
+			cursor: pointer;
+			display: block;
+			margin-left: auto;
+			margin-right: auto;
+		}
+
+		.invisible_button {
+			position: fixed;
+			right: 100%;
+			bottom: 100%;
+		}
+		.input_image_url {
+		    line-height: 1.8em;
+		}
+		.input_button {
+			border: 1px solid #ccc;
+			display: inline-block;
+			padding: 0px 12px;
+			cursor: pointer;
+			line-height: inherit;
+			vertical-align: bottom;
+		}
+
+		.block_lightbox {
+			display: none;
+			position: fixed;
+			z-index: 10;
+			padding-top: 50px;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			overflow: auto;
+		}
+		.block_lightbox_content {
+			position: relative;
+			background-color: #fefefe;
+			margin: 0 auto;
+			padding: 0;
+			width: 90%;
+			max-width: 1200px;
+			max-height: 1000px;
+		}
+		.canvas {
+			border: 0px solid #d3d3d3;
+		}
+		.close_lightbox {
+			cursor: pointer;
+			position: absolute;
+			top: 10px;
+			right: 25px;
+			font-size: 35px;
+			font-weight: bold;
 		}
 	</style>
+	<link rel="stylesheet" href="static/css/font-awesome.min.css">
 	<link rel="stylesheet" type="text/css" href="static/css/imgareaselect-default.css" />
 	<script type="text/javascript" src="static/scripts/jquery-3.1.1.min.js"></script>
 	<script type="text/javascript" src="static/scripts/jquery.imgareaselect.pack.js"></script>
@@ -43,23 +108,31 @@
 {% endblock %}
 {% block content %}
 	<div id="block_image_selection">
-		<h3>Upload an image from your computer</h3>
-		<input type="file" id="input_image_file" name="image_file" size="50"/>
-		<h3>Select an image by URL</h3>
-		<input type="url" id="input_image_url" name="image_url" size="50" />
-		<input type="button" id="input_url_button" value="Get image" />
+		<h3>Choose an image</h3>
+		<label for="input_image_file" class="input_button">
+			<span class="fa fa-cloud-upload"></span>
+		</label>
+		<input type="file" id="input_image_file" class="invisible_button" name="image_file"/>
+
+		<input type="text" id="input_image_url" name="image_url" class="input_image_url" placeholder="Upload or enter image URL" size="50" />
+		<label for="input_url_button" class="input_button">
+			Get image
+		</label>
+		<input type="button" id="input_url_button" class="invisible_button"/>
 		<hr />
 	</div>
-	<div id="block_crop_selection" class="block_crop_selection">
+	<div id="block_crop_selection">
+		<h3>Choose a selection</h3>
+		<div class="block_crop_selection">
 		<div id="block_selection_image" class="block_selection_image">
-			<p>Chosen image:</p>
+			<!--<p>Chosen image:</p>-->
 			<img id="image" style="max-width:100%; max-height:100%;" />
 		</div>
 		<div id="block_crop_selection_right" class="block_crop_selection_right">
-			<p>Selection preview</p>
+			<!--<p>Selection preview</p>-->
 			<div id="block_crop_image" class="block_crop_image">
 				<img id="crop" style="position: relative;" />
-			</div>
+			</div>	
 			<div id="block_crop_info">
 				<ul>
 					<li>Width, height: <span id="text_image_size"></span></li>
@@ -67,7 +140,10 @@
 				</ul>
 			</div>
 			<form method="post" id="form_search">
-				<input type="submit" value="Search with this crop" />
+				<label for="search_submit" class="input_button">
+					Search with this selection
+				</label>
+				<input type="submit" id="search_submit" class="invisible_button"/>
 				<input type="url" id="input_search_url" name="url" style="display: none" />
 				<input type="hidden" id="input_crop_x1" name="x1" />
 				<input type="hidden" id="input_crop_y1" name="y1" />
@@ -75,10 +151,18 @@
 				<input type="hidden" id="input_crop_y2" name="y2" />
 			</form>
 		</div>
+		</div>
 	</div>
 	<div id="block_results">
 		<hr />
 		<h3>Search results</h3>
 		<div id="block_results_images" class="block_results_images"></div>
+	</div>
+
+	<div id="block_lightbox" class="block_lightbox" onclick="close_lightbox()">
+		<span class="close_lightbox" onclick="close_lightbox()">&times;</span>
+		<div class="block_lightbox_content">
+			<canvas id="canvas" class="canvas" width="1200" height="1000" />
+		</div>
 	</div>
 {% endblock %}

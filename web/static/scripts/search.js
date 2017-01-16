@@ -47,6 +47,11 @@ $('#form_search').submit(function(e) {
 	return false;
 });
 
+// Make canvas absorb the close onclick event from the lightbox
+$('#canvas').click(function(event) {
+	event.stopPropagation();
+});
+
 $('#block_crop_selection').hide();
 $('#block_results').hide();
 
@@ -179,13 +184,57 @@ function search_image() {
 
 function display_results(images) {
 	$('#block_results_images').empty();
+	var idx = 0;
 	for(image of images) {
-		var div = '<div class="block_result"><p>' + image.image + '</p>';
-		if(image.url) {
-			div += '<img src="' + url + '" class="result_image">';
+		var bbox = '0, 0, 0, 0';
+		if(image.bbox) {
+			bbox = image.bbox.x1 + ', ' + image.bbox.y1 + ', ' + image.bbox.x2 + ', ' + image.bbox.y2;
 		}
-		div += image.score + '</div>';
+
+		var div = '<div class="block_result"><div class="block_result_image">';
+		if(image.url) {
+			div += '<img id="result' + idx + '" src="/' + image.url 
+				+ '" class="result_image" onclick="open_lightbox(result'
+				+ idx + ', ' + bbox + ')"></div>';
+		} else {
+			div += '<span class="fa fa-picture-o fa-2x result_image"></span></div>';
+		}
+		div += '<div class="block_result_info"><ul><li>Name: ' + image.name
+			 + '</li><li>Score: ' + image.score + '</li>';
+		if(image.ext_url) {
+			div += '<li><a href="' + image.ext_url + '">External link</a></li>';
+		}
+		div += '</ul></div></div>';
 		$('#block_results_images').append(div);
+		idx += 1;
 	}
 	$('#block_results').show();
+}
+
+function open_lightbox(img, x1, y1, x2, y2) {
+	$('#block_lightbox').show();
+	var canvas = $('#canvas').get(0)
+	var ctx = canvas.getContext('2d');
+
+	// Scale s.t. the larger side gets fitted exactly onto the canvas
+	var ratio  = Math.min(canvas.width / img.naturalWidth, 
+						  canvas.height / img.naturalHeight);
+	// Shift s.t. the image is centered
+	var shift_x = Math.round((canvas.width - img.naturalWidth * ratio) / 2);
+	var shift_y = Math.round((canvas.height - img.naturalHeight * ratio) / 2);
+
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.drawImage(img, shift_x, shift_y, 
+				  Math.round(img.naturalWidth * ratio), 
+				  Math.round(img.naturalHeight * ratio));
+	ctx.beginPath();
+	ctx.lineWidth = "2";
+	ctx.strokeStyle = "red";
+	ctx.rect(Math.round(x1*ratio)+shift_x, Math.round(y1*ratio)+shift_y,
+			 Math.round((x2-x1)*ratio), Math.round((y2-y1)*ratio));
+	ctx.stroke();
+}
+
+function close_lightbox() {
+	$('#block_lightbox').hide();
 }
