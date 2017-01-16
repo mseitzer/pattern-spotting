@@ -26,6 +26,8 @@ parser = argparse.ArgumentParser(description=
                                  'Historical object retrieval web backend')
 parser.add_argument('--config', default='config.txt',
                     help='Configuration file containing database paths')
+parser.add_argument('--test', action='store_true', 
+                    help='Activate test mode')
 
 class InvalidUsage(Exception):
     def __init__(self, message, status_code=400, payload=None):
@@ -127,9 +129,10 @@ def search():
             print('Warning: result image {} not found in db'.format(image_path))
             continue
         image_dict = {
-            'image': image_path,
+            'name': os.path.basename(image_path),
             'score': round(score, 4),
-            'url': image_info.get('url', ''),
+            'url': 'static/data/' + image_path,
+            'ext_url': image_info.get('url', ''),
             'bbox': {'x1': bbox[0], 'y1': bbox[1],
                      'x2': bbox[2], 'y2': bbox[3]}
         }
@@ -140,6 +143,11 @@ def search():
 
 if __name__ == "__main__":
     args = parser.parse_args(sys.argv[1:])
+
+    if args.test:
+        # In test mode, overwrite the default search_roi implementation
+        global search_roi
+        from mock_search import search_roi
 
     with open(args.config, 'r') as f:
         config = json.load(f)
