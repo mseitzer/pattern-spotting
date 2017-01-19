@@ -50,7 +50,8 @@ def _compute_integral_image(image, exp=1):
     image = np.power(image, exp)
     # Apply cumulative sum along both axis for integral image
     integral_image = np.cumsum(np.cumsum(image, axis=0), axis=1)
-    return integral_image
+    return np.nan_to_num(integral_image)
+
 
 def _integral_image_sum(integral_image, area):
     """Computes sum of area on an integral image
@@ -71,7 +72,7 @@ def _integral_image_sum(integral_image, area):
     if x1 > 0 and y1 > 0:
         value += integral_image[y1-1, x1-1]  # Add back top left area
 
-    value = np.nan_to_num(value)
+    value = np.maximum(0.0, np.nan_to_num(value))
 
     if np.isscalar(value):
         return np.array([value])
