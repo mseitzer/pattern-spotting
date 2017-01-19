@@ -57,9 +57,9 @@ def search_roi(search_model, image, roi=None, top_n=0):
     """Query the feature store for a region of interest on an image
 
     Args:
+    search_model: instance of the SearchModel class
     image: RGB PIL image to take roi of
     roi: bounding box in the form of (left, upper, right, lower)
-    feature_store: features to search on
     top_n: how many query results to return. top_n=0 returns all results
 
     Returns: (indices, similarities, bounding_boxes), where indices is an 
@@ -95,16 +95,6 @@ def search_roi(search_model, image, roi=None, top_n=0):
         x1, y1, x2, y2 = bounding_boxes[idx]
         bbox_repr = compute_representation(features[y1:y2+1, x1:x2+1])
         bounding_box_reprs[idx] = bbox_repr
-
-        # Map bounding box coordinates to image coordinates
-        # TODO: maybe do this only for bounding boxes really in the final list
-        metadata = search_model.get_metadata(feature_idx)
-        scale_x = metadata['width'] / features.shape[1]
-        scale_y = metadata['height'] / features.shape[0]
-        bounding_boxes[idx][0] *= scale_x
-        bounding_boxes[idx][1] *= scale_y
-        bounding_boxes[idx][2] *= scale_x
-        bounding_boxes[idx][3] *= scale_y
         
     reranking_indices, _ = query(query_repr, bounding_box_reprs)
 
@@ -117,8 +107,13 @@ def search_roi(search_model, image, roi=None, top_n=0):
 
     # Construct bounding boxes return list
     bbox_list = []
-    for bbox in bounding_boxes[exp_indices]:
-        bbox_list.append((bbox.item(0), bbox.item(1), 
-                          bbox.item(2), bbox.item(3)))
+    for feature_idx, bbox in zip(indices[exp_indices], 
+                                 bounding_boxes[exp_indices]):
+        # Map bounding box coordinates to image coordinates
+        metadata = search_model.get_metadata(feature_idx)
+        scale_x = metadata['width'] / features.shape[1]
+        scale_y = metadata['height'] / features.shape[0]
+        bbox_list.append((bbox.item(0)*scale_x, bbox.item(1)*scale_y, 
+                          bbox.item(2)*scale_x, bbox.item(3)*scale_y))
 
     return indices[exp_indices], similarity, bbox_list
