@@ -101,6 +101,19 @@ class TestLocalization(unittest.TestCase):
             self.assertEqual(_integral_image_sum(integral_image, area),
                              np.array(value), msg)
 
+        integral_image = np.array([[np.nan, 1.0],
+                                   [np.nan, np.inf]])
+        tests = [((0, 0, 0, 0), [0.0]),
+                 ((0, 0, 0, 1), [0.0]),
+                 ((0, 0, 1, 0), [1.0])]
+        for area, value in tests:
+            msg = 'Area {} does not produce expected value {}'.format(area, 
+                                                                      value)
+            self.assertEqual(_integral_image_sum(integral_image, area),
+                             np.array(value), msg)
+        self.assertNotEqual(_integral_image_sum(integral_image, (0, 0, 1, 1)),
+                            np.inf)
+
     def test_localize(self):
         from localization import localize
         # Note that the localize results are dependent on the exact order 

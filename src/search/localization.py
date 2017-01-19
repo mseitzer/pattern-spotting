@@ -71,6 +71,8 @@ def _integral_image_sum(integral_image, area):
     if x1 > 0 and y1 > 0:
         value += integral_image[y1-1, x1-1]  # Add back top left area
 
+    value = np.nan_to_num(value)
+
     if np.isscalar(value):
         return np.array([value])
     else:
