@@ -93,7 +93,7 @@ def search_roi(search_model, image, roi=None, top_n=0):
                                        features, crop.shape[1:3])
 
         x1, y1, x2, y2 = bounding_boxes[idx]
-        bbox_repr = compute_representation(features[x1:x2+1,y1:y2+1])
+        bbox_repr = compute_representation(features[y1:y2+1, x1:x2+1])
         bounding_box_reprs[idx] = bbox_repr
 
         # Map bounding box coordinates to image coordinates
