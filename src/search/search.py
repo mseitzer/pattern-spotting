@@ -90,7 +90,7 @@ def search_roi(search_model, image, roi=None, top_n=0):
     for idx, feature_idx in enumerate(indices):
         features = search_model.get_features(feature_idx)
         bounding_boxes[idx] = localize(localization_repr, 
-                                       features, crop.shape[1:])
+                                       features, crop.shape[1:2])
 
         x1, y1, x2, y2 = bounding_boxes[idx]
         bbox_repr = compute_representation(features[x1:x2+1,y1:y2+1])

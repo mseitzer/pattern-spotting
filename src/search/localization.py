@@ -58,6 +58,9 @@ def _integral_image_sum(integral_image, area):
     Args:
     integral_image: integral image of shape (height, width, channels)
     area: Corner coordinates of area in the form of (left, upper, right, lower)
+
+    Returns:
+    Sum of the specified area of shape (channels,)
     """
     x1, y1, x2, y2 = area
     value = integral_image[y2, x2].copy()  # Whole area
@@ -89,13 +92,13 @@ def localize(query,
     features: convolutional feature map of the image to localize in, 
         of shape (height, width, dim)
     query_image_shape: shape of the original query image 
-        in the form of (height, width, channels)
+        in the form of (height, width)
     step_size, aspect_ratio_factor: area parameters
 
     Returns: bounding box on features fitting best to the query, 
         in the form of (left, upper, right, lower)
     """
-    assert len(query_image_shape) == 3
+    assert len(query_image_shape) == 2
     assert query.shape[-1] == features.shape[-1]
     # Exponent to use in approximate max pooling. 
     # According to the paper, 10 is a good choice.
