@@ -10,9 +10,9 @@ from PIL import Image
 
 parser = argparse.ArgumentParser(description=
                                  'Extract feature representations')
-parser.add_argument('--data-dir',
+parser.add_argument('--data-dir', required=True,
                     help='Data directory')
-parser.add_argument('--out-dir',
+parser.add_argument('--out-dir', required=True,
                     help='Output directory')
 
 prefix = 'raw/notary_charters/notary_charters/'
@@ -32,16 +32,14 @@ working_set = [
     'HHSTA_Salzburg_1318_12_05-3-5.jpg',
     'HHSTA_Salzburg_1338_11_20.jpg',
     'HHSTA_Salzburg_1376_07_15.jpg',
-    'HHSTA_Salzburg_1376_07_15.jpg',
-    'HHSTA_Salzburg_1376_12_01.jpg',
     'HHSTA_Salzburg_1376_12_01.jpg',
     'HHSTA_Salzburg_1381_10_18.jpg',
-    'HHSTA_Salzburg_1381_10_18.jpg',
+    'HHSTA_Salzburg_1393_01_11-2.jpg',
     'HHSTA_Salzburg_1395_06_28-1.jpg',
-    'HHSTA_Salzburg_1395_06_28-2.jpg',
     'HHSTA_Salzburg_1395_06_28-2.jpg',
     'HHSTA_Salzburg_1396-1403-15.jpg',
     'HHSTA_Salzburg_1397_07_09-2.jpg',
+    'HHSTA_Salzburg_1397_08_16.jpg',
     'HHSTA_Salzburg_1399_06_17-1400_04_04.jpg',
     'HHSTA_Salzburg_1420_04_15.jpg',
     'HHSTA_Salzburg_1420_11_15.jpg',
@@ -49,6 +47,8 @@ working_set = [
     'HHSTA_Salzburg_1432_11_24-2.jpg',
     'HHSTA_Salzburg_1433_11_02-2.jpg',
     'HHSTA_Salzburg_1433_11_02-3.jpg',
+    'SLA-OU_14520816_r.jpg',
+    'StadtAWo_Abt1AI_0348_14080829_r.JPG',
 ]
 
 MAX_SIZE = 1000  # Maximum height or width of the images (resizes if necessary)
