@@ -17,17 +17,24 @@ parser = argparse.ArgumentParser(description=
 parser.add_argument('--database', default=None, 
                     help='Path to database to use')
 parser.add_argument('--features', required=True, 
-                    help='Path to stored features to use')
+                    help='Path to features to use')
 parser.add_argument('--model', required=True, 
                     help='Name or path of model to use')
 parser.add_argument('-n', dest='top_n', type=int, default=5, 
                     help='How many search results to display')
+parser.add_argument('--bbox', type=int, nargs=4, default=None,
+                    metavar=('left', 'upper', 'right', 'lower'),
+                    help='Specify a bounding box on the query')
 parser.add_argument('images', nargs='+', 
                     help='One or more images to query for')
 
-
 def main(args):
     args = parser.parse_args(args)
+
+    if args.bbox:
+        bbox = tuple(args.bbox)
+    else:
+        bbox = None
 
     query_images = []
     for image_path in args.images:
@@ -42,15 +49,16 @@ def main(args):
         image = Image.open(image_path)
         image = image.convert('RGB')
 
-        top_results, top_similarities = search_roi(search_model, 
+        results, similarities, bboxes = search_roi(search_model, 
                                                    image, 
+                                                   roi=bbox,
                                                    top_n=args.top_n)
 
-        print('Top {} results for query image {}'.format(len(top_results), 
+        print('Top {} results for query image {}'.format(len(results), 
                                                          image_path))
-        for result, similarity in zip(top_results, top_similarities):
+        for result, similarity, bbox in zip(results, similarities, bboxes):
             result_path = search_model.get_metadata(result)['image']
-            print('{} - {}'.format(result_path, similarity))
+            print('{}\t{:.4f}\t{}'.format(result_path, similarity, bbox))
 
 if __name__ == '__main__':
     main(sys.argv[1:])
