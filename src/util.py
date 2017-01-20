@@ -12,12 +12,12 @@ def crop_image(image, bounding_box):
     """
     height, width = image.size
     if bounding_box is None:
-        x1, y1, x2, y2 = 0, 0, width, height
+        x1, y1, x2, y2 = 0, 0, width-1, height-1
     else:
         x1, y1, x2, y2 = bounding_box
     x1, y1, x2, y2 = np.clip([x1, y1, x2, y2], 0,
-                             [width, height, width, height])
-    if x1 == x2 or y1 == y2:
+                             [width-1, height-1, width-1, height-1])
+    if x1 > x2 or y1 > y2:
         raise ValueError('Region of interest out of range')
 
     return image.crop((x1, y1, x2, y2))
