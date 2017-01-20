@@ -55,7 +55,7 @@ $('#canvas').click(function(event) {
 $('#block_crop_selection').hide();
 $('#block_results').hide();
 
-function compute_bounding_box(img, selection) {
+function compute_bounding_box(selection) {
 	return [
 		Math.round(selection.x1 * image_scale_x),
 		Math.round(selection.y1 * image_scale_y),
@@ -75,7 +75,7 @@ function display_crop(img, selection) {
 		marginTop: '-' + Math.round(crop_scale_y * selection.y1) + 'px'
 	}).show();
 
-	var bounding_box = compute_bounding_box(img, selection);
+	var bounding_box = compute_bounding_box(selection);
 	$('#text_crop_params').text(
 		  bounding_box[0] + ":" + bounding_box[2] + ", " 
 		+ bounding_box[1] + ":" + bounding_box[3]
@@ -83,7 +83,7 @@ function display_crop(img, selection) {
 }
 
 function update_crop(img, selection) {
-	var bounding_box = compute_bounding_box(img, selection);
+	var bounding_box = compute_bounding_box(selection);
 	$('#input_crop_x1').val(bounding_box[0]);
 	$('#input_crop_y1').val(bounding_box[1]);
 	$('#input_crop_x2').val(bounding_box[2]);
