@@ -107,6 +107,7 @@ def search():
 
     try:
         image = Image.open(img_file)
+        image = image.convert('RGB')
     except (IOError, OSError):
         raise InvalidUsage('Error decoding image', 415)
 
