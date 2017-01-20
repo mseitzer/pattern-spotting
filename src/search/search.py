@@ -113,7 +113,9 @@ def search_roi(search_model, image, roi=None, top_n=0):
         metadata = search_model.get_metadata(feature_idx)
         scale_x = metadata['width'] / features.shape[1]
         scale_y = metadata['height'] / features.shape[0]
-        bbox_list.append((bbox.item(0)*scale_x, bbox.item(1)*scale_y, 
-                          bbox.item(2)*scale_x, bbox.item(3)*scale_y))
+        bbox_list.append((round(bbox.item(0)*scale_x), 
+                          round(bbox.item(1)*scale_y), 
+                          round(bbox.item(2)*scale_x), 
+                          round(bbox.item(3)*scale_y)))
 
     return indices[exp_indices], similarity, bbox_list
