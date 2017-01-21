@@ -1,9 +1,6 @@
 import numpy as np
 
-def normalize(v):
-    """L2 normalization of vector"""
-    return v / np.linalg.norm(v, 2)
-
+from src.util import normalize
 
 def _region_generator(array, size, overlap, verbose=False):
     """A generator which returns square overlapping regions"""
@@ -64,7 +61,7 @@ def compute_r_macs(features, scales=(1, 4), verbose=False):
         # Uniform sampling of square regions with 40% overlap
         for region in _region_generator(features, r_size, 0.4):
             r_mac = _compute_mac(region)
-            r_mac = _normalize(np.expand_dims(r_mac, axis=0))
+            r_mac = normalize(np.expand_dims(r_mac, axis=0))
             r_macs.append(r_mac)
     return r_macs
 
@@ -88,11 +85,11 @@ def _compute_global_r_mac(features, pca=None):
     for mac in macs:
         if pca:
             mac = pca.transform(mac)
-            mac = _normalize(mac)
+            mac = normalize(mac)
         global_r_mac += mac
 
     # Final L2 normalization
-    global_r_mac = _normalize(global_r_mac)
+    global_r_mac = normalize(global_r_mac)
     return global_r_mac
 
 
@@ -124,7 +121,7 @@ def compute_localization_representation(features):
     suitable to localization
     """
     mac = _compute_mac(features)
-    return _normalize(mac)
+    return normalize(mac)
 
 
 def representation_size(model):

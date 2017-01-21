@@ -1,6 +1,10 @@
 import numpy as np
 import keras.preprocessing.image as keras_image
 
+def normalize(v):
+    """L2 normalization of vector"""
+    return v / np.linalg.norm(v, 2)
+    
 
 def crop_image(image, bounding_box):
     """Crops a PIL image to a bounding box. 
