@@ -88,9 +88,7 @@ def _compute_global_r_mac(features, pca=None):
             mac = normalize(mac)
         global_r_mac += mac
 
-    # Final L2 normalization
-    global_r_mac = normalize(global_r_mac)
-    return global_r_mac
+    return normalize(global_r_mac)
 
 
 def compute_features(model, image):
@@ -106,7 +104,8 @@ def compute_features(model, image):
 
 
 def compute_representation(features, pca=None):
-    """Computes a representation of convolutional features suitable to retrieval
+    """Computes a L2 normalized representation of convolutional features 
+    suitable to retrieval
 
     Args:
     pca (optional): sklearn.decomposition.PCA object which is used to whiten 
@@ -117,7 +116,7 @@ def compute_representation(features, pca=None):
 
 
 def compute_localization_representation(features):
-    """Computes a representation of convolutional features 
+    """Computes a L2 normalized representation of convolutional features 
     suitable to localization
     """
     mac = _compute_mac(features)
