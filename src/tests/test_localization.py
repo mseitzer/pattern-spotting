@@ -1,13 +1,7 @@
 import numpy as np
 import unittest
 
-
-def numpy_array_equals(test, actual, expected, msg=None):
-    try:
-        np.testing.assert_array_equal(actual, expected)
-    except AssertionError:
-        raise test.failureException(msg)
-
+from src.tests.util import numpy_array_equals
 
 class TestLocalization(unittest.TestCase):
     def setUp(self):
@@ -114,15 +108,33 @@ class TestLocalization(unittest.TestCase):
         self.assertNotEqual(_integral_image_sum(integral_image, (0, 0, 1, 1)),
                             np.inf)
 
+    def test_compute_area_score(self):
+        from src.search.localization import _compute_area_score
+        from src.search.localization import _compute_integral_image, AML_EXP
+        from sklearn.preprocessing import normalize
+        integral_image = np.array([[[0, 1], [1, 0]],
+                                   [[10, 0], [10, 10]]])
+        integral_image = _compute_integral_image(integral_image, AML_EXP)
+        tests = [([[20.0, 0.0]], (0, 0, 0, 0), 0.0),
+                 ([[-1.0, 0.0]], (1, 0, 1, 0), -1.0),
+                 ([[10.0, 10.0]], (1, 1, 1, 1), 1.0)]
+        for query, area, expected in tests:
+            msg = 'Query {} with area {} does not produce ' \
+                  'expected value {}'.format(query, area, expected)
+            score = _compute_area_score(normalize(np.array(query)), area, 
+                                        integral_image)
+            self.assertEqual(score, expected, msg)
+
     def test_localize(self):
         from src.search.localization import localize
+        from sklearn.preprocessing import normalize
         # Note that the localize results are dependent on the exact order 
         # the area generator generates the areas
         features = np.array([[0.1, 0.1, 0.1],
                              [0.1, 0.1, 0.1],
                              [0.1, 0.1, 10.]])
         features = np.expand_dims(features, axis=2)
-        bbox = localize(np.array([10]), features, (1, 1), 1, 1.0)
+        bbox, _ = localize(normalize(np.array([[10]])), features, (1, 1), 1, 1.0)
         self.assertEqual(bbox, (0, 0, 0, 0))  # Cosine similarity is useless in 
                                               # the one-dimensional case...
 
@@ -133,7 +145,7 @@ class TestLocalization(unittest.TestCase):
                          [ 1, 1, 1],
                          [ 3, 1, 10]])
         features = np.dstack((map1, map2))
-        bbox = localize(np.array([1, 10]), features, (1, 1), 1, 1.0)
+        bbox, _ = localize(normalize(np.array([[1, 10]])), features, (1, 1), 1, 1.0)
         self.assertEqual(bbox, (2, 2, 2, 2))
 
 if __name__ == '__main__':

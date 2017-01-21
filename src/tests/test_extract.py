@@ -1,13 +1,7 @@
 import numpy as np
 import unittest
 
-
-def numpy_array_equals(test, actual, expected, msg=None):
-    try:
-        np.testing.assert_array_equal(actual, expected)
-    except AssertionError:
-        raise test.failureException(msg)
-
+from src.tests.util import numpy_array_equals
 
 class TestExtract(unittest.TestCase):
     def setUp(self):
