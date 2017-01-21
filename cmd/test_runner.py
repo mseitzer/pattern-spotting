@@ -34,5 +34,11 @@ def main(args):
         print('{}: {}'.format(test, res_str))
     print('Passed {}/{} tests'.format(num_tests_passed, len(tests)))
 
+    if num_tests_passed != len(tests):
+        return 1
+    else:
+        return 0
+
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    res = main(sys.argv[1:])
+    sys.exit(res)
