@@ -2,6 +2,12 @@ import math
 
 import numpy as np
 
+from src.util import normalize
+
+# Exponent to use in approximate max pooling. 
+# According to the paper, 10 is a good choice.
+AML_EXP = 10.0
+
 def _area_generator(shape, step_size, 
                     aspect_ratio=None, 
                     max_aspect_ratio_div=1.0):
@@ -80,6 +86,77 @@ def _integral_image_sum(integral_image, area):
         return value
 
 
+def _compute_area_score(query, area, integral_image, exp=AML_EXP):
+    """Computes cosine similarity between query representation and bounding box
+
+    Args:
+    query: L2 normalized representation of shape (1, dim)
+    area: bounding box on integral image in the form of (left, upper, right, lower)
+    integral_image: integral image of features on which the bounding box lies
+    exp: constant used in approximate max pooling
+    """
+    max_pool = _integral_image_sum(integral_image, area) 
+    max_pool = normalize(np.power(max_pool, 1.0 / exp))
+    score = max_pool.dot(query.T)
+    return float(np.clip(score, -1.0, 1.0))
+
+
+def area_refinement(query, area, area_score, integral_image, 
+                    iterations=10, max_step=3, exp=AML_EXP):
+    """Improves bounding box by varying the box coordinates in an iterative 
+    descent manner.
+
+    Implements iterative bounding box refinement from arXiv:1511.05879v2. 
+    Note that the description given in the paper is incomplete, and we follow 
+    the C implementation Tolias et al. give in their code release here:
+    https://gforge.inria.fr/frs/download.php/latestfile/5110/pkg_mac.tar.gz
+
+    Args:
+    query: L2 normalized representation of the object to find of shape (1, dim)
+    area: bounding box to improve in the form of (left, upper, right, lower)
+    area_score: score the bounding box to improve achieves
+    integral_image: integral image of features on which the bounding box lies
+    iterations: Number of times to run the improvement for each step_size
+    max_step: box coordinates get varied from [1, max_step]
+    exp: constant used in approximate max pooling
+    
+    Returns:
+    Improved bounding box in the form of (left, upper, right, lower)
+    """
+    height, width, _ = integral_image.shape
+    best_area = area
+    best_score = area_score
+
+    for step in range(max_step, 0, -1):
+        for it in range(iterations):
+            iter_best_area = best_area
+            iter_best_score = best_score
+            area = list(best_area)
+
+            min_ranges = [0, 0, best_area[0], best_area[1]]
+            max_ranges = [best_area[2], best_area[3], width-1, height-1]
+            for coord in range(4):
+                # Try decrease coordinate
+                area[coord] = max(area[coord]-step, min_ranges[coord])
+                score = _compute_area_score(query, area, integral_image, exp)
+                if score > iter_best_score:
+                    iter_best_score = score
+                    iter_best_area = tuple(area)
+                area[coord] = best_area[coord]
+
+                # Try increase coordinate
+                area[coord] = min(area[coord]+step, max_ranges[coord])
+                score = _compute_area_score(query, area, integral_image, exp)
+                if score > iter_best_score:
+                    iter_best_score = score
+                    iter_best_area = tuple(area)
+                area[coord] = best_area[coord]
+
+            best_area = iter_best_area
+            best_score = iter_best_score
+    return best_area
+
+
 def localize(query, 
              features, 
              query_image_shape, 
@@ -91,39 +168,30 @@ def localize(query,
     max-pooling localization (see arXiv:1511.05879v2).
 
     Args:
-    query: representation of the object to find of shape (1, dim)
+    query: L2 normalized representation of the object to find of shape (1, dim)
     features: convolutional feature map of the image to localize in, 
         of shape (height, width, dim)
     query_image_shape: shape of the original query image 
         in the form of (height, width)
     step_size, aspect_ratio_factor: area parameters
 
-    Returns: bounding box on features fitting best to the query, 
-        in the form of (left, upper, right, lower)
+    Returns: bounding box on features fitting best to the query, in the form 
+        of (left, upper, right, lower), and the score on of this bounding box
     """
     assert len(query_image_shape) == 2
-    assert query.shape[-1] == features.shape[-1]
-    # Exponent to use in approximate max pooling. 
-    # According to the paper, 10 is a good choice.
-    exp = 10.0
+    assert query.shape[-1] == features.shape[-1]    
 
     query_aspect_ratio = query_image_shape[1] / query_image_shape[0]
-    query_l2norm = np.linalg.norm(query, ord=2)
 
-    integral_image = _compute_integral_image(features, exp)
+    integral_image = _compute_integral_image(features, AML_EXP)
 
     best_area = None
-    best_area_score = -np.inf
+    best_score = -np.inf
     for area in _area_generator(integral_image.shape[:2], step_size, 
                                 query_aspect_ratio, aspect_ratio_factor):
-        max_pool = _integral_image_sum(integral_image, area)
-        max_pool = np.power(max_pool, 1.0 / exp)
-        max_pool_l2norm = np.linalg.norm(max_pool, ord=2, axis=0)
-
-        score = max_pool.dot(query.T) / query_l2norm / max_pool_l2norm
-
-        if score > best_area_score:
-            best_area_score = score
+        score = _compute_area_score(query, area, integral_image, AML_EXP)
+        if score > best_score:
+            best_score = score
             best_area = area
 
-    return best_area
+    return best_area, best_score

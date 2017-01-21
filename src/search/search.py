@@ -8,7 +8,7 @@ from src.util import crop_image, convert_image
 from src.features import (compute_features, compute_representation, 
                           compute_localization_representation)
 from src.search.search_model import SearchModel
-from src.search.localization import localize
+from src.search.localization import localize, area_refinement
 
 
 def _descending_argsort(array, k):
@@ -83,12 +83,10 @@ def search_roi(search_model, image, roi=None, top_n=0, verbose=True):
 
     if verbose:
         from timeit import default_timer as timer
-        start = timer() 
+        start = timer()
 
     # Step 1: initial retrieval
     indices, sims = query(query_repr, search_model.feature_store, top_n)
-
-    #print(list(zip(indices, sims)))
 
     if verbose:
         end = timer()
@@ -104,16 +102,15 @@ def search_roi(search_model, image, roi=None, top_n=0, verbose=True):
         features = search_model.get_features(feature_idx)
         feature_shapes[feature_idx] = features.shape
 
-        bounding_boxes[idx] = localize(localization_repr, 
-                                       features, crop.shape[1:3])
+        bbox, score = localize(localization_repr, features, crop.shape[1:3])
+        bounding_boxes[idx] = area_refinement(query, best_area, best_score, 
+                                              integral_image)
 
         x1, y1, x2, y2 = bounding_boxes[idx]
         bbox_repr = compute_representation(features[y1:y2+1, x1:x2+1])
         bounding_box_reprs[idx] = bbox_repr
         
     reranking_indices, sims = query(query_repr, bounding_box_reprs)
-
-    #print(list(zip(indices[reranking_indices], sims)))
 
     if verbose:
         end = timer()
@@ -125,8 +122,6 @@ def search_roi(search_model, image, roi=None, top_n=0, verbose=True):
     avg_repr = np.average(np.vstack((bounding_box_reprs[best_rerank_indices], 
                                      query_repr)), axis=0)
     exp_indices, similarity = query(avg_repr, bounding_box_reprs)
-
-    #print(list(zip(indices[exp_indices], similarity)))
 
     if verbose:
         end = timer()
