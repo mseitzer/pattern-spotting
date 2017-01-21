@@ -21,7 +21,7 @@ class TestLocalization(unittest.TestCase):
             self.assertEqual(len(res), len(set(res)))
             self.assertEqual(set(res), set(expected))
 
-        from localization import _area_generator
+        from src.search.localization import _area_generator
         expected = [(0, 0, 0, 0), (0, 0, 0, 1), (0, 0, 1, 0), (0, 0, 1, 1),
                     (0, 1, 0, 1), (0, 1, 1, 1),
                     (1, 0, 1, 0), (1, 0, 1, 1),
@@ -49,7 +49,7 @@ class TestLocalization(unittest.TestCase):
 
 
     def test_compute_integral_image(self):
-        from localization import _compute_integral_image
+        from src.search.localization import _compute_integral_image
         image = np.array([[1.0, 2.0], [3.0, 4.0]])
         expected = np.array([[1.0, 5.0], [10.0, 30.0]])
         self.assertEqual(_compute_integral_image(image, exp=2), expected)
@@ -67,7 +67,7 @@ class TestLocalization(unittest.TestCase):
         self.assertEqual(_compute_integral_image(image), expected)
 
     def test_integral_image_sum(self):
-        from localization import _integral_image_sum
+        from src.search.localization import _integral_image_sum
         integral_image = np.array([[1,  2,  3,  4,  5],
                                    [2,  4,  6,  8, 10],
                                    [3,  6,  9, 12, 15],
@@ -115,7 +115,7 @@ class TestLocalization(unittest.TestCase):
                             np.inf)
 
     def test_localize(self):
-        from localization import localize
+        from src.search.localization import localize
         # Note that the localize results are dependent on the exact order 
         # the area generator generates the areas
         features = np.array([[0.1, 0.1, 0.1],

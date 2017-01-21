@@ -15,7 +15,7 @@ class TestExtract(unittest.TestCase):
         self.addTypeEqualityFunc(np.ndarray, eq_fn)
 
     def test_mac(self):
-        from extract import _compute_mac
+        from src.features.extract import _compute_mac
         features = np.array([
             [[8.30, 8.69, 0.86, 8.65],
              [9.63, 5.32, 5.54, 6.19],
