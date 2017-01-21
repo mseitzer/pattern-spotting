@@ -1,2 +1,2 @@
-from .search_model import SearchModel
-from .search import search_roi
+from src.search.search_model import SearchModel
+from src.search.search import search_roi

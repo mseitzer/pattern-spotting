@@ -4,9 +4,9 @@ from os.path import basename, join, isfile
 import numpy as np
 from sklearn.externals import joblib
 
-from ..database import Database
-from ..models import load_model
-from ..features import representation_size
+from src.database import Database
+from src.models import load_model
+from src.features import representation_size
 
 class SearchModel:
     """Encapsulates all components necessary to search on a database"""

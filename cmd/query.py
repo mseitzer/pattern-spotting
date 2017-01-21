@@ -59,7 +59,8 @@ def main(args):
 
         results, similarities, bboxes = search_roi(search_model, 
                                                    image, 
-                                                   roi=bbox)
+                                                   roi=bbox,
+                                                   top_n=0)
 
         N = args.top_n
         print('Top {} results for query image {}'.format(N, image_path))
@@ -67,7 +68,7 @@ def main(args):
                                             similarities[:N], 
                                             bboxes[:N]):
             result_path = search_model.get_metadata(result)['image']
-            
+
             print('{}\t{:.4f}\t{}'.format(result_path, similarity, bbox))
 
             if args.output:

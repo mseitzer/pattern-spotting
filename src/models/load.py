@@ -1,4 +1,4 @@
-from .pretrained import pretrained_models, preprocessor
+from src.models.pretrained import pretrained_models, preprocessor
 
 
 def load_model(model_name, models_path='', output_layer=None):

@@ -10,17 +10,14 @@ proj_dir = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]
 
 # Defines all unit test scripts
 tests = [
-    'src/features/test_extract.py',
-    'src/search/test_localization.py'
+    'src.tests.test_extract',
+    'src.tests.test_localization'
 ]
 
 def main(args):
     results = []
     for test in tests:
-        cwd = os.path.join(proj_dir, os.path.dirname(test))
-        file = os.path.basename(test)
-
-        res = subprocess.call(["python", file], cwd=cwd)
+        res = subprocess.call(['python', '-m', 'unittest', test], cwd=proj_dir)
         results.append(res)
 
     print('Test summary: ')

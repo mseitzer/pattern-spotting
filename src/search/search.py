@@ -4,12 +4,11 @@ import argparse
 
 import numpy as np
 
-from ..util import crop_image, convert_image
-from ..features import compute_features, \
-                       compute_representation, \
-                       compute_localization_representation
-from .search_model import SearchModel
-from .localization import localize
+from src.util import crop_image, convert_image
+from src.features import (compute_features, compute_representation, 
+                          compute_localization_representation)
+from src.search.search_model import SearchModel
+from src.search.localization import localize
 
 
 def _descending_argsort(array, k):
@@ -87,7 +86,9 @@ def search_roi(search_model, image, roi=None, top_n=0, verbose=True):
         start = timer() 
 
     # Step 1: initial retrieval
-    indices, _ = query(query_repr, search_model.feature_store, top_n)
+    indices, sims = query(query_repr, search_model.feature_store, top_n)
+
+    #print(list(zip(indices, sims)))
 
     if verbose:
         end = timer()
@@ -110,7 +111,9 @@ def search_roi(search_model, image, roi=None, top_n=0, verbose=True):
         bbox_repr = compute_representation(features[y1:y2+1, x1:x2+1])
         bounding_box_reprs[idx] = bbox_repr
         
-    reranking_indices, _ = query(query_repr, bounding_box_reprs)
+    reranking_indices, sims = query(query_repr, bounding_box_reprs)
+
+    #print(list(zip(indices[reranking_indices], sims)))
 
     if verbose:
         end = timer()
@@ -122,6 +125,8 @@ def search_roi(search_model, image, roi=None, top_n=0, verbose=True):
     avg_repr = np.average(np.vstack((bounding_box_reprs[best_rerank_indices], 
                                      query_repr)), axis=0)
     exp_indices, similarity = query(avg_repr, bounding_box_reprs)
+
+    #print(list(zip(indices[exp_indices], similarity)))
 
     if verbose:
         end = timer()

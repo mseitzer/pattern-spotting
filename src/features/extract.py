@@ -1,6 +1,6 @@
 import numpy as np
 
-def _normalize(v):
+def normalize(v):
     """L2 normalization of vector"""
     return v / np.linalg.norm(v, 2)
 
