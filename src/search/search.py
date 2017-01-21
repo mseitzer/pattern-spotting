@@ -53,7 +53,7 @@ def query(query_features, feature_store, top_n=0):
     return indices, similarity[indices]
 
 
-def search_roi(search_model, image, roi=None, top_n=0):
+def search_roi(search_model, image, roi=None, top_n=0, verbose=True):
     """Query the feature store for a region of interest on an image
 
     Args:
@@ -79,16 +79,22 @@ def search_roi(search_model, image, roi=None, top_n=0):
     query_repr = compute_representation(query_features, search_model.pca)
     localization_repr = compute_localization_representation(query_features)
 
-    print(crop.shape, query_features.shape)
     scale_x = crop.shape[2] / query_features.shape[1]
     scale_y = crop.shape[1] / query_features.shape[0]
 
+    if verbose:
+        from timeit import default_timer as timer
+        start = timer() 
+
     # Step 1: initial retrieval
-    print('Retrieval')
     indices, _ = query(query_repr, search_model.feature_store, top_n)
 
+    if verbose:
+        end = timer()
+        print('Retrieval took {:.6f} seconds'.format(end-start))
+        start = timer()
+
     # Step 2: localization and re-ranking
-    print('Localization')
     feature_shapes = {}
     bounding_boxes = np.empty(len(indices), dtype=(int, 4))
     bounding_box_reprs = np.empty((len(indices), query_repr.shape[-1]))
@@ -106,12 +112,20 @@ def search_roi(search_model, image, roi=None, top_n=0):
         
     reranking_indices, _ = query(query_repr, bounding_box_reprs)
 
+    if verbose:
+        end = timer()
+        print('Localization took {:.6f} seconds'.format(end-start))
+        start = timer()
+
     # Step 3: average query expansion
-    print('Query expansion')
     best_rerank_indices = reranking_indices[:avg_query_exp_n]
     avg_repr = np.average(np.vstack((bounding_box_reprs[best_rerank_indices], 
                                      query_repr)), axis=0)
     exp_indices, similarity = query(avg_repr, bounding_box_reprs)
+
+    if verbose:
+        end = timer()
+        print('Average query expansion took {:.6f} seconds'.format(end-start))
 
     # Construct bounding boxes return list
     bbox_list = []
@@ -121,7 +135,6 @@ def search_roi(search_model, image, roi=None, top_n=0):
         metadata = search_model.get_metadata(feature_idx)
         scale_x = metadata['width'] / feature_shapes[feature_idx][1]
         scale_y = metadata['height'] / feature_shapes[feature_idx][0]
-        print(bbox, scale_x, scale_y)
         bbox_list.append((round(bbox.item(0)*scale_x), 
                           round(bbox.item(1)*scale_y), 
                           round(bbox.item(2)*scale_x), 
