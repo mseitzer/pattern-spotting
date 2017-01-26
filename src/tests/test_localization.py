@@ -134,7 +134,7 @@ class TestLocalization(unittest.TestCase):
                              [0.1, 0.1, 0.1],
                              [0.1, 0.1, 10.]])
         features = np.expand_dims(features, axis=2)
-        bbox, _ = localize(normalize(np.array([[10]])), features, (1, 1), 1, 1.0)
+        bbox = localize(normalize(np.array([[10.]])), features, (1, 1), 1, 1.)
         self.assertEqual(bbox, (0, 0, 0, 0))  # Cosine similarity is useless in 
                                               # the one-dimensional case...
 
@@ -145,7 +145,8 @@ class TestLocalization(unittest.TestCase):
                          [ 1, 1, 1],
                          [ 3, 1, 10]])
         features = np.dstack((map1, map2))
-        bbox, _ = localize(normalize(np.array([[1, 10]])), features, (1, 1), 1, 1.0)
+        bbox = localize(normalize(np.array([[1., 10.]])), features, 
+                        (1, 1), 1, 1.)
         self.assertEqual(bbox, (2, 2, 2, 2))
 
 if __name__ == '__main__':

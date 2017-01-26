@@ -101,7 +101,7 @@ def _compute_area_score(query, area, integral_image, exp=AML_EXP):
     return float(np.clip(score, -1.0, 1.0))
 
 
-def area_refinement(query, area, area_score, integral_image, 
+def _area_refinement(query, area, area_score, integral_image, 
                     iterations=10, max_step=3, exp=AML_EXP):
     """Improves bounding box by varying the box coordinates in an iterative 
     descent manner.
@@ -179,7 +179,7 @@ def localize(query,
         of (left, upper, right, lower), and the score on of this bounding box
     """
     assert len(query_image_shape) == 2
-    assert query.shape[-1] == features.shape[-1]    
+    assert query.shape[-1] == features.shape[-1]
 
     query_aspect_ratio = query_image_shape[1] / query_image_shape[0]
 
@@ -191,7 +191,8 @@ def localize(query,
                                 query_aspect_ratio, aspect_ratio_factor):
         score = _compute_area_score(query, area, integral_image, AML_EXP)
         if score > best_score:
-            best_score = score
             best_area = area
+            best_score = score
 
-    return best_area, best_score
+    return _area_refinement(query, best_area, best_score, integral_image, 
+                            exp=AML_EXP)
