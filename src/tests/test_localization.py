@@ -112,9 +112,9 @@ class TestLocalization(unittest.TestCase):
         from src.search.localization import _compute_area_score
         from src.search.localization import _compute_integral_image, AML_EXP
         from sklearn.preprocessing import normalize
-        integral_image = np.array([[[0, 1], [1, 0]],
-                                   [[10, 0], [10, 10]]])
-        integral_image = _compute_integral_image(integral_image, AML_EXP)
+        image = np.array([[[0, 1], [1, 0]],
+                          [[10, 0], [10, 10]]])
+        integral_image = _compute_integral_image(image, AML_EXP)
         tests = [([[20.0, 0.0]], (0, 0, 0, 0), 0.0),
                  ([[-1.0, 0.0]], (1, 0, 1, 0), -1.0),
                  ([[10.0, 10.0]], (1, 1, 1, 1), 1.0)]
@@ -124,6 +124,38 @@ class TestLocalization(unittest.TestCase):
             score = _compute_area_score(normalize(np.array(query)), area, 
                                         integral_image)
             self.assertEqual(score, expected, msg)
+
+    def test_area_refinement(self):
+        from src.search.localization import _area_refinement
+        from src.search.localization import _compute_integral_image, AML_EXP
+        from src.search.localization import _compute_area_score
+        from sklearn.preprocessing import normalize
+        # Note that in some pathological cases, the best possible region 
+        # is not detected even but a region containing this region, 
+        # even though the best region should have a bigger score.
+        # This is likely due to a combination of integral images and 
+        # approximate max pooling, which produces rounding errors.
+        # This problem could be solved by checking if the two scores 
+        # are equal under some epsilon before checking for the larger score. 
+        # If the two scores are equal, the smaller region can then be chosen.
+        # This case can be constructed in a unittest, but some tests have 
+        # shown that the problem seems to not occur in practice, thus we 
+        # save some runtime by omitting the above checks.
+        image = np.array([[[0.0, 1.0], [0.1, 0.0], [0.0, 0.5]],
+                          [[1.0, 2.0], [1.0, 2.0], [4.0, 4.1]],
+                          [[3.0, 0.0], [0.1, 4.0], [5.0, 5.0]]])
+        integral_image = _compute_integral_image(image, AML_EXP)
+        tests = [([[5., 5.]], (0, 0, 0, 0), (2, 2, 2, 2)),
+                 ([[0., 1.]], (0, 0, 0, 0), (0, 0, 0, 0)),
+                 ([[3., 4.]], (0, 0, 0, 0), (0, 2, 1, 2))]
+
+        for query, area, expected in tests:
+            msg = 'Query {} with area {} does not produce ' \
+                  'expected value {}'.format(query, area, expected)
+            query = normalize(np.array(query))
+            score = _compute_area_score(query, area, integral_image)
+            refined_area = _area_refinement(query, area, score, integral_image)
+            self.assertEqual(refined_area, expected)
 
     def test_localize(self):
         from src.search.localization import localize
