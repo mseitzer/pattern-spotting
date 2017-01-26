@@ -9,12 +9,17 @@ proj_dir = os.path.abspath(os.path.split(os.path.realpath(__file__))[0]
                            + '/..')
 
 # Defines all unit test scripts
-tests = [
+TESTS = [
     'src.tests.test_extract',
     'src.tests.test_localization'
 ]
 
 def main(args):
+    if len(args) > 0:
+        tests = [t for t in TESTS if t in args]  # Filter tests to execute
+    else:
+        tests = TESTS
+
     results = []
     for test in tests:
         res = subprocess.call(['python', '-m', 'unittest', test], cwd=proj_dir)
