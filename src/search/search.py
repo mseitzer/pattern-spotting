@@ -8,7 +8,7 @@ from src.util import crop_image, convert_image
 from src.features import (compute_features, compute_representation, 
                           compute_localization_representation)
 from src.search.search_model import SearchModel
-from src.search.localization import localize, area_refinement
+from src.search.localization import localize
 
 
 def _descending_argsort(array, k):
@@ -69,17 +69,16 @@ def search_roi(search_model, image, roi=None, top_n=0, verbose=True):
         specifying the rough location of the found objects.
     """
     assert top_n >= 0
-    avg_query_exp_n = 5  # How many top entries to use in query expansion
+    AVG_QUERY_EXP_N = 5  # How many top entries to use in query expansion
 
     crop = convert_image(crop_image(image, roi))
-    crop = search_model.preprocess_fn(crop)
 
     query_features = compute_features(search_model.model, crop)
     query_repr = compute_representation(query_features, search_model.pca)
     localization_repr = compute_localization_representation(query_features)
 
-    scale_x = crop.shape[2] / query_features.shape[1]
-    scale_y = crop.shape[1] / query_features.shape[0]
+    scale_x = crop.shape[1] / query_features.shape[1]
+    scale_y = crop.shape[0] / query_features.shape[0]
 
     if verbose:
         from timeit import default_timer as timer
@@ -102,9 +101,8 @@ def search_roi(search_model, image, roi=None, top_n=0, verbose=True):
         features = search_model.get_features(feature_idx)
         feature_shapes[feature_idx] = features.shape
 
-        bbox, score = localize(localization_repr, features, crop.shape[1:3])
-        bounding_boxes[idx] = area_refinement(query, best_area, best_score, 
-                                              integral_image)
+        bounding_boxes[idx] = localize(localization_repr, features, 
+                                       crop.shape[:2])
 
         x1, y1, x2, y2 = bounding_boxes[idx]
         bbox_repr = compute_representation(features[y1:y2+1, x1:x2+1])
@@ -118,7 +116,7 @@ def search_roi(search_model, image, roi=None, top_n=0, verbose=True):
         start = timer()
 
     # Step 3: average query expansion
-    best_rerank_indices = reranking_indices[:avg_query_exp_n]
+    best_rerank_indices = reranking_indices[:AVG_QUERY_EXP_N]
     avg_repr = np.average(np.vstack((bounding_box_reprs[best_rerank_indices], 
                                      query_repr)), axis=0)
     exp_indices, similarity = query(avg_repr, bounding_box_reprs)

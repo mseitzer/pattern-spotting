@@ -94,9 +94,12 @@ def _compute_global_r_mac(features, pca=None):
 def compute_features(model, image):
     """Computes convolutional feature map of image
     
-    Returns:
-    Convolutional feature map of shape (height, width, depth), where the 
-    exact shape components depend on the used model.
+    Args:
+    model: instance of models.model used to extract features
+    image: array of shape (height, width, channels) to compute features on
+
+    Returns: Convolutional feature map of shape (height, width, depth), 
+    where the exact shape depends on the used model.
     """
     features = model.predict(image)
     features = np.squeeze(features, axis=0)
@@ -124,5 +127,4 @@ def compute_localization_representation(features):
 
 
 def representation_size(model):
-    # Note that this does not work for both Tensorflow and Theano backends
-    return model.layers[-1].output_shape[3]
+    return model.output_shape[3]

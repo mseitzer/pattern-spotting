@@ -31,19 +31,16 @@ def crop_image(image, bounding_box):
 def convert_image(image):
     """Converts an RGB PIL image to Keras input format
     
-    Returns: The image as a numpy array of the shape 
-        (1, height, width, channels)
+    Returns: The image as a numpy array of the shape (height, width, channels)
     """
     image = keras_image.img_to_array(image)
-    image = np.expand_dims(image, axis=0)
     return image
 
 
 def load_image(image_path):
     """Loads an image from disk to Keras input format
 
-    Returns: The image as a numpy array of the shape 
-        (1, height, width, channels)
+    Returns: The image as a numpy array of the shape (height, width, channels)
     """
     image = keras_image.load_img(image_path)
     return convert_image(image)

@@ -12,9 +12,7 @@ class SearchModel:
     """Encapsulates all components necessary to search on a database"""
     def __init__(self, model, features_path, database_path=None):
         # Load the extraction model
-        self.model, self.preprocess_fn = load_model(model)
-        # Avoid Keras lazy predict function construction
-        self.model._make_predict_function()
+        self.model = load_model(model)
 
         # Load the feature metadata
         features_basename = basename(features_path)

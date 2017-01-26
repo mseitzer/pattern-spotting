@@ -37,7 +37,7 @@ parser.add_argument('name',
                     help='(Dataset) name to use for extracted files')
 
 
-def extract_conv_features(name, model, features_dir, image_dir, root_dir):
+def extract_conv_features(name, model_name, features_dir, image_dir, root_dir):
     """Extracts features of all images in image_dir and 
     saves them for later use.
     """
@@ -52,7 +52,7 @@ def extract_conv_features(name, model, features_dir, image_dir, root_dir):
     images = [img for img in images if os.path.splitext(img)[1] in extensions]
     images = sorted(images)
 
-    model, preprocess_fn = load_model(model)
+    model = load_model(model_name)
 
     meta_data = {}
     for idx, image_name in enumerate(images):
@@ -61,15 +61,14 @@ def extract_conv_features(name, model, features_dir, image_dir, root_dir):
                                                               image_name))
         image_path = join(image_dir, image_name)
         image = load_image(image_path)
-        image = preprocess_fn(image)
-
+        
         features = compute_features(model, image)
 
         np.save(join(out_dir, os.path.basename(image_name)), features)
         meta_data[idx] = {
             'image': os.path.relpath(image_path, root_dir),
-            'height': image.shape[1],
-            'width': image.shape[2]
+            'height': image.shape[0],
+            'width': image.shape[1]
         }
 
     meta_file_name = '{}.meta'.format(name)
