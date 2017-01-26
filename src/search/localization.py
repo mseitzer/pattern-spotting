@@ -158,8 +158,11 @@ def _area_refinement(query, area, area_score, integral_image,
                     iter_best_area = tuple(area)
                 area[coord] = best_area[coord]
 
-            best_area = iter_best_area
-            best_score = iter_best_score
+            if iter_best_score == best_score:
+                break
+            else:
+                best_area = iter_best_area
+                best_score = iter_best_score
     return best_area
 
 
