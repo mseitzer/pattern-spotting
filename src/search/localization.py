@@ -10,7 +10,7 @@ AML_EXP = 10.0
 
 def _area_generator(shape, step_size, 
                     aspect_ratio=None, 
-                    max_aspect_ratio_div=1.0):
+                    max_aspect_ratio_div=1.1):
     """A generator which returns areas of a rectangle whose aspect ratio 
     optionally does not exceed a given aspect ratio
 
@@ -95,10 +95,10 @@ def _compute_area_score(query, area, integral_image, exp=AML_EXP):
     integral_image: integral image of features on which the bounding box lies
     exp: constant used in approximate max pooling
     """
-    max_pool = _integral_image_sum(integral_image, area) 
+    max_pool = _integral_image_sum(integral_image, area)
     max_pool = normalize(np.power(max_pool, 1.0 / exp))
     score = max_pool.dot(query.T)
-    return float(np.clip(score, -1.0, 1.0))
+    return np.clip(score, -1.0, 1.0)
 
 
 def _area_refinement(query, area, area_score, integral_image, 
@@ -108,16 +108,22 @@ def _area_refinement(query, area, area_score, integral_image,
 
     Implements iterative bounding box refinement from arXiv:1511.05879v2. 
     Note that the description given in the paper is incomplete, and we follow 
-    the C implementation Tolias et al. give in their code release here:
-    https://gforge.inria.fr/frs/download.php/latestfile/5110/pkg_mac.tar.gz
+    the C implementation Tolias et al. give in their code release 
+    (https://gforge.inria.fr/frs/download.php/latestfile/5110/pkg_mac.tar.gz), 
+    with the only difference that they immediately update the bounding box 
+    once they find a better score, i.e. the box might get updated multiple times 
+    per iteration. This implementation checks every coordinate direction 
+    and only then updates the box with the best box found. This means that this 
+    implementation probably needs a higher number of iterations than theirs to 
+    achieve comparable results.
 
     Args:
     query: L2 normalized representation of the object to find of shape (1, dim)
     area: bounding box to improve in the form of (left, upper, right, lower)
     area_score: score the bounding box to improve achieves
     integral_image: integral image of features on which the bounding box lies
-    iterations: Number of times to run the improvement for each step_size
-    max_step: box coordinates get varied from [1, max_step]
+    iterations: Number of times to run the improvement for each step size
+    max_step: step sizes get varied from [1, max_step]
     exp: constant used in approximate max pooling
     
     Returns:
