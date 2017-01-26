@@ -1,3 +1,5 @@
+from math import floor
+
 import numpy as np
 
 from src.util import normalize
@@ -54,7 +56,7 @@ def compute_r_macs(features, scales=(1, 4), verbose=False):
 
     r_macs = []
     for scale in range(scales[0], scales[1]+1):
-        r_size = round(2 * min(height, width) / (scale + 1))
+        r_size = max(floor(2 * min(height, width) / (scale + 1)), 1)
         if verbose:
             print('Region width at scale {}: {}'.format(scale, r_size))
 
@@ -63,6 +65,9 @@ def compute_r_macs(features, scales=(1, 4), verbose=False):
             r_mac = _compute_mac(region)
             r_mac = normalize(np.expand_dims(r_mac, axis=0))
             r_macs.append(r_mac)
+
+        if r_size == 1:
+            break
     return r_macs
 
 
