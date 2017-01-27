@@ -1,34 +1,31 @@
+MODEL   ?= VGG16
+DATASET	?= working
 
-MODEL=VGG16
-DATASET=working
-
-DATA_DIR=data
-FEATURES_DIR=features/${DATASET}
-IMAGE_DIR=${DATA_DIR}/${DATASET}
-
-FEATURES_META_FILE=${FEATURES_DIR}/${DATASET}.meta
-REPR_PCA_FILE=${FEATURES_DIR}/${DATASET}.pca
-REPR_FILE=${FEATURES_DIR}/${DATASET}.repr.npy
+DATA_ROOT_DIR = data
+FEATURES_DIR  = features/${DATASET}
+IMAGE_DIR    ?= ${DATA_ROOT_DIR}/${DATASET}
 
 .PHONY: all setup features repr test clean clean-features
 
 all:
 
 setup:
-	mkdir ${DATA_DIR}
-	mkdir ${DATA_DIR}/raw
-	mkdir ${DATA_DIR}/interim
+	mkdir ${DATA_ROOT_DIR}
+	mkdir ${DATA_ROOT_DIR}/raw
+	mkdir ${DATA_ROOT_DIR}/interim
 	mkdir database
 	mkdir features
 	mkdir models
 
+FEATURES_META_FILE = ${FEATURES_DIR}/${DATASET}.meta
+REPR_FILE          = ${FEATURES_DIR}/${DATASET}.repr.npy
 
 features: ${FEATURES_META_FILE}
 
 pca:
 	cmd/extract_features.py --features-dir ${FEATURES_DIR} pca ${DATASET}
 
-repr: features ${REPR_FILE}
+repr: features pca ${REPR_FILE}
 
 ${FEATURES_META_FILE}:
 	cmd/extract_features.py --root-dir data/ --features-dir ${FEATURES_DIR} \
@@ -48,8 +45,8 @@ clean-features:
 
 ##### Datasets #####
 
-NOTARY_CHARTERS_DIR=${DATA_DIR}/raw/notary_charters
-NOTARY_CHARTERS_RESIZED_DIR=${DATA_DIR}/interim/notary_charters
+NOTARY_CHARTERS_DIR         = ${DATA_ROOT_DIR}/raw/notary_charters
+NOTARY_CHARTERS_RESIZED_DIR = ${DATA_ROOT_DIR}/interim/notary_charters
 
 dataset-notary-charters: ${NOTARY_CHARTERS_DIR}/notary_charters.csv ${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters
 
