@@ -17,13 +17,11 @@ all:
 setup:
 	mkdir ${DATA_DIR}
 	mkdir ${DATA_DIR}/raw
+	mkdir ${DATA_DIR}/interim
 	mkdir database
 	mkdir features
 	mkdir models
 
-working-set:
-	mkdir -p ${DATA_DIR}/working
-	src/data/working.py --data-dir ${DATA_DIR} --out-dir ${DATA_DIR}/working
 
 features: ${FEATURES_META_FILE}
 
@@ -47,3 +45,24 @@ clean: clean-features
 clean-features:
 	rm -f ${FEATURES_META_FILE} ${FEATURES_DIR}/features/*
 
+
+##### Datasets #####
+
+NOTARY_CHARTERS_DIR=${DATA_DIR}/raw/notary_charters
+NOTARY_CHARTERS_RESIZED_DIR=${DATA_DIR}/interim/notary_charters
+
+dataset-notary-charters: ${NOTARY_CHARTERS_DIR}/notary_charters.csv ${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters
+
+${NOTARY_CHARTERS_DIR}/notary_charters.csv:
+	src/data/notary_charters/dl_notary_charters.py -o ${NOTARY_CHARTERS_DIR} \ 
+		data/external/notary_charters/notary_charters.xml
+
+${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters:
+	src/data/notary_charters/resize.py \
+		--data-dir ${NOTARY_CHARTERS_DIR}/notary_charters \
+		--out-dir ${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters
+
+
+dataset-working: ${NOTARY_CHARTERS_DIR}/notary_charters.csv
+	mkdir -p ${DATA_DIR}/working
+	src/data/working.py --data-dir ${DATA_DIR} --out-dir ${DATA_DIR}/working
