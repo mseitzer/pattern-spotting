@@ -55,7 +55,8 @@ def extract_conv_features(name, model_name, features_dir, image_dir, root_dir):
 
     model = load_model(model_name)
 
-    meta_data = {}
+    meta_data = {'model': model_name}
+
     for idx, image_name in enumerate(images):
         print('{}/{}: extracting features of image {}'.format(idx+1, 
                                                               len(images), 
