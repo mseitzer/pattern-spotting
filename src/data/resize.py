@@ -1,34 +1,33 @@
 #!/usr/bin/env python3
-"""Script to resize the notary charters to a usable size"""
+"""Script to resize images to a usable size"""
 
 import argparse
 import os
 import sys
 from PIL import Image
 
-parser = argparse.ArgumentParser(description='Resize notary charters images')
-parser.add_argument('--data-dir', required=True, 
-                    help='Data directory of raw notary charters images')
-parser.add_argument('--out-dir', required=True, help='Output directory')
+parser = argparse.ArgumentParser(description='Resize images in a folder')
 parser.add_argument('--size', default=1000, type=int, 
                     help='Maximum side size of images')
+parser.add_argument('input_dir', help='Input directory of images')
+parser.add_argument('output_dir', help='Output directory of images')
 
 def main(args):
     args = parser.parse_args(args)
-
+    
     extensions = ['.png', '.jpg', '.jpeg']
-    images = os.listdir(args.data_dir)
+    images = os.listdir(args.input_dir)
     images = [img for img in images 
               if os.path.splitext(img)[1].lower() in extensions]
     images = sorted(images)
 
-    if not os.path.isdir(args.out_dir):
-        os.makedirs(args.out_dir)
+    if not os.path.isdir(args.output_dir):
+        os.makedirs(args.output_dir)
 
     for image in images:
-        out_path = os.path.join(args.out_dir, image)
-        img = Image.open(os.path.join(args.data_dir, image))
+        img = Image.open(os.path.join(args.input_dir, image))
         img.thumbnail((args.size, args.size))
+        out_path = os.path.join(args.output_dir, image)
         img.save(out_path)
 
     print('Resized {} images to maximum side size {}'.format(len(images), 

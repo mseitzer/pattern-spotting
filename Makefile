@@ -58,9 +58,8 @@ ${NOTARY_CHARTERS_DIR}/notary_charters.csv:
 		data/external/notary_charters/notary_charters.xml
 
 ${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters:
-	src/data/notary_charters/resize.py \
-		--data-dir ${NOTARY_CHARTERS_DIR}/notary_charters \
-		--out-dir ${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters
+	src/data/resize.py ${NOTARY_CHARTERS_DIR}/notary_charters \
+		${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters
 
 
 dataset-working: ${NOTARY_CHARTERS_DIR}/notary_charters.csv
