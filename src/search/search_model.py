@@ -36,7 +36,7 @@ class SearchModel:
         # Construct paths to feature files
         self.feature_file_paths = []
         features_sub_folder = join(features_path, 'features/')
-        for idx, metadata in enumerate(self.feature_metadata):
+        for idx, metadata in self.feature_metadata.items():
             if not idx.isdigit():
                 continue
             image_name = basename(self.feature_metadata[str(idx)]['image'])
