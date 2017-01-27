@@ -8,12 +8,9 @@ import os
 import sys
 from PIL import Image
 
-parser = argparse.ArgumentParser(description=
-                                 'Extract feature representations')
-parser.add_argument('--data-dir', required=True,
-                    help='Data directory')
-parser.add_argument('--out-dir', required=True,
-                    help='Output directory')
+parser = argparse.ArgumentParser(description='Build working set of images')
+parser.add_argument('--data-dir', required=True, help='Data directory')
+parser.add_argument('--out-dir', required=True, help='Output directory')
 
 prefix = 'raw/notary_charters/notary_charters/'
 working_set = [

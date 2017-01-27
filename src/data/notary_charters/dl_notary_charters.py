@@ -37,7 +37,7 @@ def construct_index(f, folder, charters):
     for charter in charters:
         url = urllib.parse.urlparse(charter['imageFile'])
         image_path = '{}/{}'.format(folder, os.path.basename(url.path))
-        f.write('{}/{};{};{}\n'.format(image_path, 
+        f.write('{};{};{};{}\n'.format(image_path, 
                                        charter['imageFile'],
                                        charter['url'], 
                                        charter['date']))
