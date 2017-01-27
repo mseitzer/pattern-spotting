@@ -47,9 +47,10 @@ def extract_conv_features(name, model_name, features_dir, image_dir, root_dir):
     if not exists(out_dir):
         os.mkdir(out_dir)
 
-    extensions = ['.png', '.jpg']
-    images = os.listdir(image_dir)
-    images = [img for img in images if os.path.splitext(img)[1] in extensions]
+    extensions = ['.png', '.jpg', '.jpeg']
+    images = os.listdir(args.input_dir)
+    images = [img for img in images 
+              if os.path.splitext(img)[1].lower() in extensions]
     images = sorted(images)
 
     model = load_model(model_name)
