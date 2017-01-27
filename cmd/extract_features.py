@@ -48,7 +48,7 @@ def extract_conv_features(name, model_name, features_dir, image_dir, root_dir):
         os.mkdir(out_dir)
 
     extensions = ['.png', '.jpg', '.jpeg']
-    images = os.listdir(args.input_dir)
+    images = os.listdir(image_dir)
     images = [img for img in images 
               if os.path.splitext(img)[1].lower() in extensions]
     images = sorted(images)
@@ -86,12 +86,12 @@ def learn_pca(metadata, name, features_dir):
     r_macs and do the PCA computation. If this assumption does not hold, 
     we can switch to a memmapped numpy array and IncrementalPCA.
     """
+    num_features = sum([1 for m in metadata.keys() if m.isdigit()])
     r_macs = []
-    for idx in range(len(metadata)):
+    for idx in range(num_features):
         data = metadata[str(idx)]
-        features_file = join(features_dir, 
-                                     'features/', 
-                                     os.path.basename(data['image']))
+        features_file = join(features_dir, 'features/', 
+                             os.path.basename(data['image']))
         features = np.load('{}.npy'.format(features_file))
         r_macs += compute_r_macs(features)
 
@@ -119,6 +119,8 @@ def compute_global_representation(metadata, name, features_dir, pca=None):
     """
     repr_store = None
     for idx, data in metadata.items():
+        if not idx.isdigit():
+            continue
         features_file = join(features_dir, 'features/', 
                              os.path.basename(data['image']))
         features = np.load('{}.npy'.format(features_file))
