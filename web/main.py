@@ -19,15 +19,18 @@ MAX_FILE_SIZE = 16*1024*1024  # Maximum upload size 16MB
 URL_TIMEOUT = 5  # Maximum time in seconds to wait for connection opening
 
 app = Flask('Historical object retrieval')
-app.debug = True
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
 
 parser = argparse.ArgumentParser(description=
                                  'Historical object retrieval web backend')
 parser.add_argument('--config', default='config.txt',
                     help='Configuration file containing database paths')
+parser.add_argument('-d', '--debug', action='store_true', 
+                    help='Activate debug mode')
 parser.add_argument('--test', action='store_true', 
                     help='Activate test mode')
+parser.add_argument('--host', default='localhost',
+                    help='Host address to listen on')
 
 class InvalidUsage(Exception):
     def __init__(self, message, status_code=400, payload=None):
@@ -145,6 +148,9 @@ def search():
 if __name__ == "__main__":
     args = parser.parse_args(sys.argv[1:])
 
+    if args.debug:
+        app.debug = True
+
     if args.test:
         # In test mode, overwrite the default search_roi implementation
         global search_roi
@@ -161,4 +167,4 @@ if __name__ == "__main__":
           'and image database "{}".'.format(config['model'], 
                                             config['features'], 
                                             config['database']))
-    app.run()
+    app.run(host=args.host)
