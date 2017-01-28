@@ -36,12 +36,19 @@ def add_from_folder(db, folder, root_dir=None):
         db.add_image(image)
 
 
-def add_from_csv(db, csv_file):
+def add_from_csv(db, csv_file, root_dir=None):
+    csv_file = os.path.abspath(csv_file)
     with open(csv_file, 'r') as f:
         fieldnames = ['path', 'url', 'external_url', 'date']
         reader = csv.DictReader(f, fieldnames=fieldnames, delimiter=';')
         for row in reader:
-            img = db.add_image(row['path'])
+            if root_dir:
+                directory = os.path.dirname(csv_file)
+                path = os.path.relpath(os.path.join(directory, row['path']),
+                                       root_dir)
+            else:
+                path = row['path']
+            img = db.add_image(path)
             img['url'] = row['url']
             img['external_url'] = row['external_url']
 
@@ -71,7 +78,7 @@ def main(args):
     if os.path.isdir(args.input):
         add_from_folder(db, args.input, args.root_dir)
     elif os.path.splitext(args.input)[1] == '.csv':
-        add_from_csv(db, args.input)
+        add_from_csv(db, args.input, args.root_dir)
     else:
         print('Could not interpret input {}'.format(args.input))
 
