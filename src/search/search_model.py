@@ -34,7 +34,7 @@ class SearchModel:
                                 self.feature_store.shape[-1]))
 
         # Construct paths to feature files
-        self.feature_file_paths = []
+        self.feature_file_paths = {} 
         features_sub_folder = join(features_path, 'features/')
         for idx, metadata in self.feature_metadata.items():
             if not idx.isdigit():
@@ -42,7 +42,7 @@ class SearchModel:
             image_name = basename(self.feature_metadata[str(idx)]['image'])
             path = join(features_sub_folder, '{}.npy'.format(image_name))
             if isfile(path):
-                self.feature_file_paths.append(path)
+                self.feature_file_paths[str(idx)] = path
             else:
                 print('Missing feature file for image {}'.format(image_name))
 
@@ -63,7 +63,7 @@ class SearchModel:
         return self.feature_metadata[str(feature_idx)]
 
     def get_features(self, feature_idx):
-        feature_file_path = self.feature_file_paths[feature_idx]
+        feature_file_path = self.feature_file_paths[str(feature_idx)]
         return np.load(feature_file_path)
 
     def query_database(self, image):
