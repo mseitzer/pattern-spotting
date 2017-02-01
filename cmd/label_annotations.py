@@ -15,7 +15,11 @@ from src.data.notary_charters.annotations import parse
 parser = argparse.ArgumentParser(description='Interactively label '
                                  'charter annotations')
 parser.add_argument('--overwrite', action='store_true',
-                    help='Do not recover saved annotations file')
+                    help='Do not recover saved annotations file, start new one')
+parser.add_argument('--show-stored', action='store_true', 
+                    help='Show annotations which already have labels')
+parser.add_argument('--only-default', action='store_true', 
+                    help='Show only annotations which have the default label')
 parser.add_argument('--image-dir', required=True,
                     help='Folder where images are read from')
 parser.add_argument('annotations_dir',
@@ -29,10 +33,15 @@ def format_bbox(bbox):
     return '{} {} {} {}'.format(bbox[0], bbox[1], bbox[2], bbox[3])
 
 
-def query_user(out_dir, image_dir, annotation_files, labeled_annotations):
-    def prompt(name, bbox, max_label):
-        s = '\nImage: {}, bounding box: {}\n'.format(name, bbox)
-        s += 'Choose a label for this bounding box. Choices are:\n'
+def query_user(out_dir, image_dir, annotation_files, labeled_annotations, 
+               show_stored=False, only_default=False):
+    def prompt(imagebbox, max_label, existing_label=None):
+        s = '\nImage: {}, bounding box: {}\n'.format(imagebbox.image, 
+                                                     imagebbox.bbox)
+        if existing_label:
+            s += 'Current label is {}. Choices are:\n'.format(existing_label)
+        else:
+            s += 'Choose a label for this bounding box. Choices are:\n'
         if max_label > 1:
             s += '[1-{l}]: existing labels from 1-{l}\n'.format(l=max_label)
         elif max_label == 1:
@@ -44,10 +53,10 @@ def query_user(out_dir, image_dir, annotation_files, labeled_annotations):
         choice = input(s + '>')
         return choice
 
-    def interact(name, bbox, image):
+    def interact(imagebbox, image, existing_label=None):
         nonlocal max_label
         while True: 
-            choice = prompt(name, bbox, max_label)
+            choice = prompt(imagebbox, max_label, existing_label)
             if choice == 's':
                 break
             elif choice == 'q':
@@ -71,7 +80,7 @@ def query_user(out_dir, image_dir, annotation_files, labeled_annotations):
                                              'class_{}.jpg'.format(label))
                     image.save(repr_path)
                     print('Using {} as representative '
-                          'for class {}'.format(name, label))
+                          'for class {}'.format(imagebbox.image, label))
                 break
             else:
                 print('{} is no valid choice'.format(choice))
@@ -84,8 +93,16 @@ def query_user(out_dir, image_dir, annotation_files, labeled_annotations):
     window_active = False
     for name, bbox in parse(annotation_files, 'GraphicRegion'):
         imagebbox = ImageBbox(image=name, bbox=format_bbox(bbox))
-        if imagebbox in labeled_annotations:
-            continue
+
+        label = labeled_annotations.get(imagebbox, None)
+        if label is not None:
+            if not show_stored:
+                continue
+            if only_default and label != 0:
+                continue
+        else:
+            if only_default:
+                continue
 
         image_path = os.path.join(image_dir, name)
         if not os.path.isfile(image_path):
@@ -101,13 +118,14 @@ def query_user(out_dir, image_dir, annotation_files, labeled_annotations):
         image = Image.open(image_path)
         image = image.crop(bbox)
         imgplot = plt.imshow(image)
+        imgplot.figure.canvas.set_window_title(imagebbox.image)
         plt.draw()
         
         if not window_active:
             plt.show(block=False)
             window_active = True
 
-        if not interact(imagebbox.image, bbox, image):
+        if not interact(imagebbox, image, label):
             break
             
     plt.close()
@@ -139,8 +157,8 @@ def main(args):
     else:
         print('Opening new labeled annotations file {}'.format(args.output_file))
 
-    query_user(out_dir, args.image_dir, 
-               annotation_files, labeled_annotations)
+    query_user(out_dir, args.image_dir, annotation_files, labeled_annotations, 
+               args.show_stored, args.only_default)
 
     with open(args.output_file, 'w') as f:
         for imagebbox in sorted(labeled_annotations.keys()):
