@@ -2,7 +2,7 @@
 import os
 import sys
 import argparse
-from collections import namedtuple, OrderedDict
+from collections import namedtuple, OrderedDict, defaultdict
 
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -20,7 +20,9 @@ parser.add_argument('--show-stored', action='store_true',
                     help='Show annotations which already have labels')
 parser.add_argument('--only-default', action='store_true', 
                     help='Show only annotations which have the default label')
-parser.add_argument('--image-dir', required=True,
+parser.add_argument('--summarize', action='store_true', 
+                    help='Print a summary of the labeled annotations')
+parser.add_argument('--image-dir',
                     help='Folder where images are read from')
 parser.add_argument('annotations_dir',
                     help='Folder where notary charters annotations are stored')
@@ -132,6 +134,15 @@ def query_user(out_dir, image_dir, annotation_files, labeled_annotations,
     plt.close()
 
 
+def print_summary(labeled_annotations):
+    label_counts = defaultdict(int)
+    for label in labeled_annotations.values():
+        label_counts[label] += 1
+
+    for label in sorted(label_counts.keys()):
+        print('{}: {}'.format(label, label_counts[label]))
+
+
 def main(args):
     args = parser.parse_args(args)
 
@@ -157,6 +168,14 @@ def main(args):
               'from {}'.format(len(labeled_annotations), args.output_file))
     else:
         print('Opening new labeled annotations file {}'.format(args.output_file))
+
+    if args.summarize:
+        print_summary(labeled_annotations)
+        return
+    else:
+        if not args.image_dir:
+            print('Need image directory to continue')
+            return
 
     query_user(out_dir, args.image_dir, annotation_files, labeled_annotations, 
                args.show_stored, args.only_default)
