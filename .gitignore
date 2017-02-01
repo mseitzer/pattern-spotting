@@ -1,3 +1,6 @@
-/data
 *.xml
 __pycache__
+
+data/*
+!data/external
+data/**/*.jpg

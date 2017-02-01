@@ -10,7 +10,6 @@ IMAGE_DIR    ?= ${DATA_ROOT_DIR}/${DATASET}
 all:
 
 setup:
-	mkdir ${DATA_ROOT_DIR}
 	mkdir ${DATA_ROOT_DIR}/raw
 	mkdir ${DATA_ROOT_DIR}/interim
 	mkdir database
