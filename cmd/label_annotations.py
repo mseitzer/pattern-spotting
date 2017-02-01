@@ -38,7 +38,7 @@ def query_user(out_dir, image_dir, annotation_files, labeled_annotations,
     def prompt(imagebbox, max_label, existing_label=None):
         s = '\nImage: {}, bounding box: {}\n'.format(imagebbox.image, 
                                                      imagebbox.bbox)
-        if existing_label:
+        if existing_label is not None:
             s += 'Current label is {}. Choices are:\n'.format(existing_label)
         else:
             s += 'Choose a label for this bounding box. Choices are:\n'
@@ -74,13 +74,14 @@ def query_user(out_dir, image_dir, annotation_files, labeled_annotations,
 
             if 0 <= label <= max_label+1:
                 labeled_annotations[imagebbox] = label
-                if label == max_label+1:
-                    max_label += 1
-                    repr_path = os.path.join(out_dir, 
-                                             'class_{}.jpg'.format(label))
+                repr_path = os.path.join(out_dir, 
+                                         'class_{}.jpg'.format(label))
+                if label != 0 and not os.path.isfile(repr_path):
                     image.save(repr_path)
                     print('Using {} as representative '
                           'for class {}'.format(imagebbox.image, label))
+                if label == max_label+1:
+                    max_label += 1
                 break
             else:
                 print('{} is no valid choice'.format(choice))
@@ -94,16 +95,6 @@ def query_user(out_dir, image_dir, annotation_files, labeled_annotations,
     for name, bbox in parse(annotation_files, 'GraphicRegion'):
         imagebbox = ImageBbox(image=name, bbox=format_bbox(bbox))
 
-        label = labeled_annotations.get(imagebbox, None)
-        if label is not None:
-            if not show_stored:
-                continue
-            if only_default and label != 0:
-                continue
-        else:
-            if only_default:
-                continue
-
         image_path = os.path.join(image_dir, name)
         if not os.path.isfile(image_path):
             # Try if file with uc/lc extension exists
@@ -114,6 +105,16 @@ def query_user(out_dir, image_dir, annotation_files, labeled_annotations,
                 print('Warning: image {} does not exist'.format(name))
                 continue
             imagebbox = ImageBbox(image=alt_name, bbox=imagebbox.bbox)
+
+        label = labeled_annotations.get(imagebbox, None)
+        if label is not None:
+            if not show_stored:
+                continue
+            if only_default and label != 0:
+                continue
+        else:
+            if only_default:
+                continue
 
         image = Image.open(image_path)
         image = image.crop(bbox)
