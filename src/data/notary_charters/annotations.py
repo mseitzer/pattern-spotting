@@ -38,4 +38,8 @@ def parse(files, keys=None):
             coords = [(int(x), int(y)) 
                       for x, y in (c.split(',') for c in coords)]
             
-            yield image, _bounding_box(coords)
+            bbox = _bounding_box(coords)
+            if bbox[0] >= bbox[2] or bbox[1] >= bbox[3]:
+                print('Warning: invalid bounding box in {}'.format(file))
+                continue
+            yield image, bbox
