@@ -128,7 +128,9 @@ def query_user(out_dir, image_dir, annotation_files, labeled_annotations,
             plt.show(block=False)
             window_active = True
 
-        if not interact(imagebbox, image, label):
+        resume = interact(imagebbox, image, label)
+        image.close()
+        if not resume:
             break
             
     plt.close()
