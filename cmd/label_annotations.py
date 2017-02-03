@@ -2,7 +2,7 @@
 import os
 import sys
 import argparse
-from collections import namedtuple, OrderedDict, defaultdict
+from collections import OrderedDict, defaultdict, namedtuple
 
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -10,7 +10,9 @@ from PIL import Image
 # Path hack to be able to import from sibling directory
 sys.path.append(os.path.abspath(os.path.split(os.path.realpath(__file__))[0]
                                 + '/..'))
-from src.data.notary_charters.annotations import parse
+from src.data.notary_charters.annotations import (parse_annotations, 
+                                                  parse_labeled_annotations,
+                                                  write_labeled_annotations)
 
 parser = argparse.ArgumentParser(description='Interactively label '
                                  'charter annotations')
@@ -30,10 +32,6 @@ parser.add_argument('output_file',
                     help='Output file with labeled annotations')
 
 ImageBbox = namedtuple('ImageBbox', 'image bbox')
-
-def format_bbox(bbox):
-    return '{} {} {} {}'.format(bbox[0], bbox[1], bbox[2], bbox[3])
-
 
 def query_user(out_dir, image_dir, annotation_files, labeled_annotations, 
                show_stored=False, only_default=False):
@@ -94,8 +92,8 @@ def query_user(out_dir, image_dir, annotation_files, labeled_annotations,
         max_label = max(max_label, label)
 
     window_active = False
-    for name, bbox in parse(annotation_files, 'GraphicRegion'):
-        imagebbox = ImageBbox(image=name, bbox=format_bbox(bbox))
+    for name, bbox in parse_annotations(annotation_files, 'GraphicRegion'):
+        imagebbox = ImageBbox(image=name, bbox=bbox)
 
         image_path = os.path.join(image_dir, name)
         if not os.path.isfile(image_path):
@@ -161,11 +159,9 @@ def main(args):
 
     # Recover labeled annotations if the file already exists
     if not args.overwrite and os.path.isfile(args.output_file):
-        with open(args.output_file, 'r') as f:
-            for line in f:
-                name, bbox, label = line.split(';')
-                imagebbox = ImageBbox(image=name, bbox=bbox)
-                labeled_annotations[imagebbox] = int(label)
+        for image, bbox, label in parse_labeled_annotations(args.output_file):
+            imagebbox = ImageBbox(image=image, bbox=bbox)
+            labeled_annotations[imagebbox] = label
         print('Recovered {} previous labeled annotations '
               'from {}'.format(len(labeled_annotations), args.output_file))
     else:
@@ -182,12 +178,11 @@ def main(args):
     query_user(out_dir, args.image_dir, annotation_files, labeled_annotations, 
                args.show_stored, args.only_default)
 
-    with open(args.output_file, 'w') as f:
-        for imagebbox in sorted(labeled_annotations.keys()):
-            label = labeled_annotations[imagebbox]
-            f.write('{};{};{}\n'.format(imagebbox.image, imagebbox.bbox, label))
-        print('Saved {} labeled annotations '
-              'to {}'.format(len(labeled_annotations), args.output_file))
+    annotations_out = ((ib.image, ib.bbox, labeled_annotations[ib])
+                       for ib in sorted(labeled_annotations.keys()))
+    write_labeled_annotations(args.output_file, annotations_out)    
+    print('Saved {} labeled annotations '
+          'to {}'.format(len(labeled_annotations), args.output_file))
 
 if __name__ == '__main__':
     main(sys.argv[1:])

@@ -9,15 +9,16 @@ def _bounding_box(coords):
     ys = [y for _, y in coords]
     return (min(xs), min(ys), max(xs), max(ys))
 
-def parse(files, keys=None):
+
+def parse_annotations(files, keys=None):
     """Returns a generator over all annotations contained in the passed files
 
     Args:
     files: list of annotation xml files
     keys (optional): list of annotation keys to filter annotations by
 
-    Returns:
-    Tuples of the form (image_name, (bounding_box))
+    Generates: tuples of the form (image, bbox), where bbox is a tuple 
+    of the form (left, upper, right, lower).
     """
     def strip_namespace(tag):
         return tag.split('}')[-1]
@@ -43,3 +44,34 @@ def parse(files, keys=None):
                 print('Warning: invalid bounding box in {}'.format(file))
                 continue
             yield image, bbox
+
+
+def parse_labeled_annotations(file):
+    """Returns a generator over all labeled annotations contained in the file
+
+    Args:
+    file: labeled annotations file
+
+    Generates: tuples of the form (image, bbox, label), where bbox is a tuple 
+    of the form (left, upper, right, lower).
+    """
+    with open(file, 'r') as f:
+        for line in f:
+            name, bbox, label = line.split(';')
+            bbox = tuple((int(c) for c in bbox.split(' ')))
+            yield name, bbox, int(label)
+
+
+def write_labeled_annotations(file, labeled_annotations):
+    """Writes a list of labeled annotations to a file, such that it can 
+    be later recovered with parse_labeled_annotations
+
+    Args:
+    file: file to output
+    labeled_annotations: list of tuples of the form (image, bbox, label), 
+        where bbox is a tuple of the form (left, upper, right, lower).
+    """
+    with open(file, 'w') as f:
+        for image, bbox, label in labeled_annotations:
+            bbox = '{} {} {} {}'.format(bbox[0], bbox[1], bbox[2], bbox[3])
+            f.write('{};{};{}\n'.format(image, bbox, label))
