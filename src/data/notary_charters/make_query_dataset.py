@@ -51,9 +51,9 @@ def main(args):
         image.save(os.path.join(class_dir, crop_name))
 
     labeled_crops_path = os.path.join(args.output_dir, 'labeled_crops.csv')
-    labeled_crops = ((image, bbox, label) 
+    labeled_crops = [(image, bbox, label) 
                      for label in sorted(crops_per_label.keys())
-                     for image, bbox in crops_per_label[label])
+                     for image, bbox in crops_per_label[label]]
     write_labeled_annotations(labeled_crops_path, labeled_crops)
     print('Wrote {} labeled crops '
           'to {}'.format(len(labeled_crops), labeled_crops_path))
