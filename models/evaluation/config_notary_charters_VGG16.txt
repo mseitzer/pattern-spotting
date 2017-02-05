@@ -1,0 +1,6 @@
+{
+	"model": "VGG16",
+	"features": "features/working",
+	"rerank_n": 50,
+	"map_n": 5
+}

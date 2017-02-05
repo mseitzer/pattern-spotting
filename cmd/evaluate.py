@@ -20,15 +20,18 @@ parser.add_argument('query_dataset', help='Path to query dataset')
 parser.add_argument('predictions_file', 
                     help='File saving predictions to or containing predictions')
 
+# Number of images a label must have to be considered as a query
+MIN_RELEVANT_ELEMENTS = 5
+
 def avg_precision(actual, predictions):
-    k = len(predictions)
+    k = min(len(actual), len(predictions))
     score = 0.0
     correct_items = 0.0
     for idx, predicted in enumerate(predictions):
         if predicted in actual:
             correct_items += 1.0
-            score += (correct_items / (idx+1)) * (1.0 / k)
-    return score
+            score += (correct_items / (idx+1))
+    return score / k
 
 
 def run_predictions(search_model, queries, rerank_n, map_n):
@@ -60,7 +63,7 @@ def main(args):
     # Filter queries
     if 0 in crops_per_label: del crops_per_label[0]
     crops_per_label = {k: v for k, v in crops_per_label.items() 
-                       if len(v) >= config['map_n']}
+                       if len(v) >= MIN_RELEVANT_ELEMENTS}
 
     # For now, just query for the first element of each class
     queries = {l[0][0]: l[:config['map_n']] for l in crops_per_label.values()}
