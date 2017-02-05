@@ -10,6 +10,14 @@ from src.features import representation_size
 
 class SearchModel:
     """Encapsulates all components necessary to search on a database"""
+    @staticmethod
+    def from_config(config):
+        """Constructs a search model from a config dictionary"""
+        if 'model' not in config or 'features' not in config:
+            raise ValueError('Search model needs model and features parameters')
+        database = config.get('database')
+        return SearchModel(config['model'], config['features'], database)
+
     def __init__(self, model, features_path, database_path=None):
         # Load the extraction model
         self.model = load_model(model)
@@ -70,3 +78,4 @@ class SearchModel:
         if self.database:
             return self.database.images.get(image) 
         return None
+
