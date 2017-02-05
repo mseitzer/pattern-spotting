@@ -14,7 +14,17 @@ setup:
 	mkdir ${DATA_ROOT_DIR}/interim
 	mkdir database
 	mkdir features
-	mkdir models
+	mkdir -p models/evaluation
+
+test:
+	cmd/test_runner.py
+
+clean: clean-features
+
+clean-features:
+	rm -f ${FEATURES_META_FILE} ${FEATURES_DIR}/features/*
+
+##### Extraction #####
 
 FEATURES_META_FILE = ${FEATURES_DIR}/${DATASET}.meta
 REPR_FILE          = ${FEATURES_DIR}/${DATASET}.repr.npy
@@ -32,15 +42,6 @@ ${FEATURES_META_FILE}:
 
 ${REPR_FILE}:
 	cmd/extract_features.py --features-dir ${FEATURES_DIR} repr ${DATASET}
-
-test:
-	cmd/test_runner.py
-
-clean: clean-features
-
-clean-features:
-	rm -f ${FEATURES_META_FILE} ${FEATURES_DIR}/features/*
-
 
 ##### Datasets #####
 
@@ -73,3 +74,11 @@ ${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters/query: data/external/notary_chart
 dataset-working: ${NOTARY_CHARTERS_DIR}/notary_charters.csv
 	mkdir -p ${DATA_DIR}/working
 	src/data/working.py --data-dir ${DATA_DIR} --out-dir ${DATA_DIR}/working
+
+##### Evaluation #####
+
+evaluate-notary-charters: ${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters/query
+	cmd/evaluate.py \
+		models/evaluation/config_notary_charters_${MODEL}.txt \
+		${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters/query/labeled_crops.csv \
+		models/evaluation/predictions_notary_charters_${MODEL}.txt
