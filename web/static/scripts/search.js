@@ -156,14 +156,12 @@ function search_image() {
 
 	var selection = area_select.getSelection();
 	console.log(selection);
-	update_crop($('#image').get(0), selection);
-
-	if(fd.get('x1') === "" 
-		|| fd.get('y1') === "" 
-		|| fd.get('x2') === "" 
-		|| fd.get('y2') === "") {
-		return;
-	}
+	
+	var bounding_box = compute_bounding_box(selection);
+	fd.set('x1', bounding_box[0]);
+	fd.set('y1', bounding_box[1]);
+	fd.set('x2', bounding_box[2]);
+	fd.set('y2', bounding_box[3]);
 
 	$('#block_results').hide();
 	$.ajax({
