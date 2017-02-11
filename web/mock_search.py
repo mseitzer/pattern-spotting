@@ -9,6 +9,7 @@ def search_roi(search_model, image, bounding_box, top_n=0):
 
     indices = np.arange(n)
     similarities = np.linspace(1.0, 0.0, n)
+    similarities[0] = np.nan
 
     bounding_boxes = []
     for idx in indices:

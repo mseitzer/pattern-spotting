@@ -30,13 +30,22 @@
 			width: 100px;
 			height: 100px;
 		}
-		.block_results_images {
-			display: block;
-		}
+
 		.block_result {
 			display: flex;
 			flex-wrap: wrap;
 			margin-bottom: 1em;
+		}
+		.block_results_spinner {
+			text-align: center;
+		}
+		.block_results_status {
+			font-size: 0.8em;
+			margin-top: 0em;
+			margin-bottom: 1em;
+		}
+		.block_results_images {
+			display: block;
 		}
 		.block_result_image {
 			height: 5em;
@@ -69,6 +78,11 @@
 			cursor: pointer;
 			line-height: inherit;
 			vertical-align: bottom;
+		}
+		.button_disabled {
+			cursor: auto;
+			background-color: #e6e6e6;
+			border-color: #808080;
 		}
 
 		.block_lightbox {
@@ -143,7 +157,7 @@
 				</ul>
 			</div>
 			<form method="post" id="form_search">
-				<label for="search_submit" class="input_button">
+				<label for="search_submit" id="search_submit_label" class="input_button">
 					Search with this selection
 				</label>
 				<input type="submit" id="search_submit" class="invisible_button"/>
@@ -155,6 +169,10 @@
 	<div id="block_results">
 		<hr />
 		<h3>Search results</h3>
+		<div id="block_results_spinner" class="block_results_spinner">
+			<span class="fa fa-spinner fa-spin fa-3x"></span>
+		</div>
+		<div id="block_results_status" class="block_results_status"></div>
 		<div id="block_results_images" class="block_results_images"></div>
 	</div>
 

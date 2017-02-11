@@ -5,6 +5,7 @@ import io
 import time
 import json
 import argparse
+from math import isnan
 
 import requests
 from PIL import Image
@@ -134,7 +135,7 @@ def search():
             continue
         image_dict = {
             'name': os.path.basename(image_path),
-            'score': round(score, 4),
+            'score': round(score, 4) if not isnan(score) else 'NaN',
             'url': 'static/data/' + image_path,
             'ext_url': image_info.get('url', ''),
             'bbox': {'x1': bbox[0], 'y1': bbox[1],

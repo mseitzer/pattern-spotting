@@ -139,7 +139,19 @@ function load_image_from_file(file_node) {
 	reader.readAsDataURL(file_node.files[0]);
 }
 
+function disable_search_button() {
+	$('#search_submit').attr('disabled', true);
+	$('#search_submit_label').addClass('button_disabled');
+}
+
+function enable_search_button() {
+	$('#search_submit_label').removeClass('button_disabled');
+	$('#search_submit').attr('disabled', false);
+}
+
 function search_image() {
+	disable_search_button();
+
 	var fd = new FormData($('#form_search').get(0));
 	if(!fd.get('url') || fd.get('url') === "") {
 		fd.delete('url');
@@ -163,7 +175,11 @@ function search_image() {
 	fd.set('x2', bounding_box[2]);
 	fd.set('y2', bounding_box[3]);
 
-	$('#block_results').hide();
+	$('#block_results_images').hide();
+	$('#block_results_spinner').show();
+	$('#block_results').show();
+
+	var start_time = new Date().getTime();
 	$.ajax({
 		url: 'search',
 		type: 'POST',
@@ -172,15 +188,24 @@ function search_image() {
 		processData: false,
 		contentType: false
 	}).done(function(response, xhr) {
-		display_results(response['results']);	
+		var request_time = (new Date().getTime() - start_time) / 1000;
+		var status = 'Retrieved ' + response['results'].length + ' results in ' + request_time + " seconds."
+		$('#block_results_status').html(status);
+		construct_results(response['results']);
+		$('#block_results_spinner').hide();
+		$('#block_results_images').show();
+		enable_search_button();
 	}).fail(function(xhr, status, error) {
-		// TODO: error handling
 		console.log(status);
 		console.log(error);
+		var status = 'An error occured while searching: ' + error;
+		$('#block_results_status').html(status);
+		$('#block_results_spinner').hide();
+		enable_search_button();
 	});
 }
 
-function display_results(images) {
+function construct_results(images) {
 	$('#block_results_images').empty();
 	var idx = 0;
 	for(image of images) {
@@ -206,7 +231,6 @@ function display_results(images) {
 		$('#block_results_images').append(div);
 		idx += 1;
 	}
-	$('#block_results').show();
 }
 
 function open_lightbox(img, x1, y1, x2, y2) {
