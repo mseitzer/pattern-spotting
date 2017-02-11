@@ -206,7 +206,8 @@ function search_image() {
 }
 
 function construct_results(images) {
-	$('#block_results_images').empty();
+	$('#block_results_images_left').empty().append('<hr class="hr_sep"/>');
+	$('#block_results_images_right').empty().append('<hr class="hr_sep"/>');
 	var idx = 0;
 	for(image of images) {
 		var bbox = '0, 0, 0, 0';
@@ -223,12 +224,20 @@ function construct_results(images) {
 			div += '<span class="fa fa-picture-o fa-2x result_image"></span></div>';
 		}
 		div += '<div class="block_result_info"><ul><li>Name: ' + image.name
-			 + '</li><li>Score: ' + image.score + '</li>';
+			+ '</li><li>Score: ' + image.score + '</li>';
+		if(image.bbox) {
+			div += '<li>Box: ' + image.bbox.x1 + ":" + image.bbox.x2 + ", " 
+				+ image.bbox.y1 + ":" + image.bbox.y2 + '</li>';
+		}
 		if(image.ext_url) {
 			div += '<li><a href="' + image.ext_url + '">External link</a></li>';
 		}
-		div += '</ul></div></div>';
-		$('#block_results_images').append(div);
+		div += '</ul></div></div><hr class="hr_sep"/>';
+		if(idx % 2 == 0) {
+			$('#block_results_images_left').append(div);
+		} else {
+			$('#block_results_images_right').append(div);
+		}
 		idx += 1;
 	}
 }

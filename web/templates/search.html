@@ -12,6 +12,10 @@
 		p {
 			margin-top: 0em;
 		}
+		.hr_sep {
+			margin-top: 0em;
+            border-top: 1px solid #d9d9d9;
+		}
 		.important { color: #336699; }
 		.block_crop_selection {
 			display: flex;
@@ -31,11 +35,6 @@
 			height: 100px;
 		}
 
-		.block_result {
-			display: flex;
-			flex-wrap: wrap;
-			margin-bottom: 1em;
-		}
 		.block_results_spinner {
 			text-align: center;
 		}
@@ -47,12 +46,29 @@
 		.block_results_images {
 			display: block;
 		}
+		.block_results_images_left {
+			width: 48%;
+			float: left;
+			overflow: hidden;
+		}
+		.block_results_images_right {
+			width: 48%;
+			float: right;
+			overflow: hidden;
+		}
+		.block_result {
+			display: flex;
+			flex-wrap: wrap;
+			margin-top: 1em;
+			margin-bottom: 1em;
+		}
 		.block_result_image {
-			height: 5em;
-			width: 5em;
+			height: 7.5em;
+			width: 7.5em;
 		}
 		.block_result_info {
-
+			display: flex;
+			align-items: center;
 		}
 		.result_image {
 			width: 100%;
@@ -173,7 +189,10 @@
 			<span class="fa fa-spinner fa-spin fa-3x"></span>
 		</div>
 		<div id="block_results_status" class="block_results_status"></div>
-		<div id="block_results_images" class="block_results_images"></div>
+		<div id="block_results_images" class="block_results_images">
+			<div id="block_results_images_left" class="block_results_images_left"></div>
+			<div id="block_results_images_right" class="block_results_images_right"></div>
+		</div>
 	</div>
 
 	<div id="block_lightbox" class="block_lightbox" onclick="close_lightbox()">
