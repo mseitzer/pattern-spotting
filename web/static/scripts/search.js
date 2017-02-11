@@ -23,7 +23,13 @@ $('#image').on('load', function() {
 			minHeight: Math.round(32 / image_scale_y) || 1,
 		});
 	}, 0);
-
+	if(img.naturalWidth < img.naturalHeight) {
+		$(this).css({'min-width': '', 'max-width': '', 
+					 'min-height': '100%', 'max-height': '100%'});
+	} else {
+		$(this).css({'min-height': '', 'max-height': '',
+					 'min-width': '100%', 'max-width': '100%'});
+	}
 	$('#text_image_size').text(
 		this.naturalWidth + "px, " + this.naturalHeight + "px"
 	);

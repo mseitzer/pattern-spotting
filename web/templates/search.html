@@ -22,6 +22,13 @@
 		}
 		.block_selection_image {
 			width: 20em;
+			height: 20em;
+			border: 1px solid #d9d9d9;
+			max-width: 20em;
+			max-height: 20em;
+			display:flex;
+			align-items:center;
+			justify-content:center;
 		}
 		.block_crop_selection_right {
 			margin-left: 2em;
@@ -33,6 +40,10 @@
 			overflow: hidden;
 			width: 100px;
 			height: 100px;
+		}
+		.selection_image {
+			width: auto; 
+			height: auto;
 		}
 
 		.block_results_spinner {
@@ -159,7 +170,7 @@
 		<div class="block_crop_selection">
 		<div id="block_selection_image" class="block_selection_image">
 			<!--<p>Chosen image:</p>-->
-			<img id="image" style="max-width:100%; max-height:100%;" />
+			<img id="image" class="selection_image" />
 		</div>
 		<div id="block_crop_selection_right" class="block_crop_selection_right">
 			<!--<p>Selection preview</p>-->
