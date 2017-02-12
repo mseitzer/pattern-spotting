@@ -53,6 +53,12 @@ $('#form_search').submit(function(e) {
 	return false;
 });
 
+$('#block_selection_image').click(function(event) {
+	if(area_select) {
+		area_select.cancelSelection();
+	}
+});
+
 // Make canvas absorb the close onclick event from the lightbox
 $('#canvas').click(function(event) {
 	event.stopPropagation();
