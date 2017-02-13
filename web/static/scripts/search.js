@@ -188,6 +188,7 @@ function search_image() {
 	fd.set('y2', bounding_box[3]);
 
 	$('#block_results_images').hide();
+	$('#block_results_status').empty();
 	$('#block_results_spinner').show();
 	$('#block_results').show();
 
