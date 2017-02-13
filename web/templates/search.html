@@ -23,11 +23,14 @@
 			font-size: 0.5em;
 		}
 
-		.block_crop_selection {
+		#block_crop_selection {
 			display: flex;
 			justify-content: space-between;
 		}
-		.block_selection_image {
+		#block_crop_selection_left {
+			position: relative;
+		}
+		#block_selection_image {
 			width: 20em;
 			height: 20em;
 			border: 1px solid #d9d9d9;
@@ -37,13 +40,13 @@
 			align-items: center;
 			justify-content: center;
 		}
-		.block_crop_info {
+		#block_crop_info {
 			position: absolute;
 			bottom: -1.0em;
 			line-height: 1.0em;
 			width: 100%;
 		}
-		.block_crop_info_flex {
+		#block_crop_info_flex {
 			/* Firefox fix: 
 			 * FF removes flex if element is absolute positioned 
 			 */
@@ -51,12 +54,12 @@
 			justify-content: space-between;
 		}
 
-		.block_crop_selection_right {
+		#block_crop_selection_right {
 			display: flex;
 			justify-content: space-between;
 			flex-direction: column;
 		}
-		.block_crop_image {
+		#block_crop_image {
 			width: 10em;
 			height: 10em;
 			margin-top: 1em;
@@ -71,23 +74,23 @@
 			height: auto;
 		}
 
-		.block_results_spinner {
+		#block_results_spinner {
 			text-align: center;
 		}
-		.block_results_status {
+		#block_results_status {
 			font-size: 0.8em;
 			margin-top: 0em;
 			margin-bottom: 1em;
 		}
-		.block_results_images {
+		#block_results_images {
 			display: block;
 		}
-		.block_results_images_left {
+		#block_results_images_left {
 			width: 48%;
 			float: left;
 			overflow: hidden;
 		}
-		.block_results_images_right {
+		#block_results_images_right {
 			width: 48%;
 			float: right;
 			overflow: hidden;
@@ -137,7 +140,7 @@
 			border-color: #808080;
 		}
 
-		.block_lightbox {
+		#block_lightbox {
 			display: none;
 			position: fixed;
 			z-index: 10;
@@ -176,7 +179,7 @@
 	<script type="text/javascript" src="static/scripts/search.js" defer></script>
 {% endblock %}
 {% block content %}
-	<div id="block_image_selection">
+	<section id="section_image_selection">
 		<h3>Choose an image</h3>
 		<label for="input_image_file" class="input_button">
 			<span class="fa fa-cloud-upload"></span>
@@ -189,23 +192,21 @@
 		</label>
 		<input type="button" id="input_url_button" class="invisible_button"/>
 		<hr />
-	</div>
-	<div id="block_crop_selection">
+	</section>
+	<section id="section_crop_selection">
 		<h3>Choose a selection</h3>
-		<div class="block_crop_selection">
-			<div style="position: relative;">
-				<div id="block_selection_image" class="block_selection_image">
+		<div id="block_crop_selection">
+			<div id="block_crop_selection_left">
+				<div id="block_selection_image">
 					<img id="image" class="selection_image" />
 				</div>
-				<div id="block_crop_info" class="block_crop_info">
-					<div class="block_crop_info_flex">
-						<span class="text_small_description" id="text_image_size"></span>
-						<span class="text_small_description" id="text_crop_params"></span>
-					</div>
-				</div>
+				<div id="block_crop_info"><div id="block_crop_info_flex">
+					<span class="text_small_description" id="text_image_size"></span>
+					<span class="text_small_description" id="text_crop_params"></span>
+				</div></div>
 			</div>
-			<div id="block_crop_selection_right" class="block_crop_selection_right">
-				<div id="block_crop_image" class="block_crop_image">
+			<div id="block_crop_selection_right">
+				<div id="block_crop_image">
 					<img id="crop" style="position: relative;" />
 				</div>
 				<form method="post" id="form_search">
@@ -217,21 +218,21 @@
 				</form>
 			</div>
 		</div>
-	</div>
-	<div id="block_results">
+	</section>
+	<section id="section_results">
 		<hr />
 		<h3>Search results</h3>
-		<div id="block_results_spinner" class="block_results_spinner">
+		<div id="block_results_spinner">
 			<span class="fa fa-spinner fa-spin fa-3x"></span>
 		</div>
-		<span id="block_results_status" class="block_results_status"></span>
-		<div id="block_results_images" class="block_results_images">
-			<div id="block_results_images_left" class="block_results_images_left"></div>
-			<div id="block_results_images_right" class="block_results_images_right"></div>
+		<span id="block_results_status"></span>
+		<div id="block_results_images">
+			<div id="block_results_images_left"></div>
+			<div id="block_results_images_right"></div>
 		</div>
-	</div>
+	</section>
 
-	<div id="block_lightbox" class="block_lightbox" onclick="close_lightbox()">
+	<div id="block_lightbox" onclick="close_lightbox()">
 		<span class="close_lightbox" onclick="close_lightbox()">&times;</span>
 		<div class="block_lightbox_content">
 			<canvas id="canvas" class="canvas" width="1200" height="1000" />

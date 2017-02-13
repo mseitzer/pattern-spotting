@@ -34,7 +34,7 @@ $('#image').on('load', function() {
 		this.naturalWidth + "x" + this.naturalHeight
 	);
 	$(this).show();
-	$('#block_crop_selection').show();
+	$('#section_crop_selection').show();
 	$('#block_crop_selection_right').show();
 })
 .hide();
@@ -64,8 +64,8 @@ $('#canvas').click(function(event) {
 	event.stopPropagation();
 });
 
-$('#block_crop_selection').hide();
-$('#block_results').hide();
+$('#section_crop_selection').hide();
+$('#section_results').hide();
 
 function compute_bounding_box(selection) {
 	return [
@@ -112,7 +112,7 @@ function load_image_from_url(url) {
 	}
 
 	$('#image').hide();
-	$('#block_results').hide();
+	$('#section_results').hide();
 	$('#input_search_url').val("");
 	$('#input_image_file').val("");
 	if(area_select) {
@@ -139,7 +139,7 @@ function load_image_from_file(file_node) {
 	// TODO: file name extension validation
 
 	$('#image').hide();
-	$('#block_results').hide();
+	$('#section_results').hide();
 	$('#input_search_url').val("");
 	if(area_select) {
 		area_select.setOptions({hide: true});
@@ -194,7 +194,7 @@ function search_image() {
 	$('#block_results_images').hide();
 	$('#block_results_status').empty();
 	$('#block_results_spinner').show();
-	$('#block_results').show();
+	$('#section_results').show();
 
 	var start_time = new Date().getTime();
 	$.ajax({
