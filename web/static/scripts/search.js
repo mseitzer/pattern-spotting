@@ -24,10 +24,10 @@ $('#image').on('load', function() {
 		});
 	}, 0);
 	if(img.naturalWidth < img.naturalHeight) {
-		$(this).css({'min-width': '', 'max-width': '', 
+		$(this).css({'min-width': '', 'max-width': '', 'flex-basis': '', 
 					 'min-height': '100%', 'max-height': '100%'});
 	} else {
-		$(this).css({'min-height': '', 'max-height': '',
+		$(this).css({'min-height': '', 'max-height': '', 'flex-basis': '100%', 
 					 'min-width': '100%', 'max-width': '100%'});
 	}
 	$('#text_image_size').text("WxH: " + 
