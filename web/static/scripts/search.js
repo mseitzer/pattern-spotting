@@ -30,8 +30,8 @@ $('#image').on('load', function() {
 		$(this).css({'min-height': '', 'max-height': '',
 					 'min-width': '100%', 'max-width': '100%'});
 	}
-	$('#text_image_size').text(
-		this.naturalWidth + "px, " + this.naturalHeight + "px"
+	$('#text_image_size').text("WxH: " + 
+		this.naturalWidth + "x" + this.naturalHeight
 	);
 	$(this).show();
 	$('#block_crop_selection').show();
@@ -89,9 +89,13 @@ function display_crop(img, selection) {
 
 	var bounding_box = compute_bounding_box(selection);
 	$('#text_crop_params').text(
-		  bounding_box[0] + ":" + bounding_box[2] + ", " 
-		+ bounding_box[1] + ":" + bounding_box[3]
+		"x: " + bounding_box[0] + ":" + bounding_box[2] + ", " +
+		"y: " + bounding_box[1] + ":" + bounding_box[3]
 	);
+	// $('#text_crop_params').text(
+		// bounding_box[0] + ":" + bounding_box[2] + ", " +
+		// bounding_box[1] + ":" + bounding_box[3]
+	// );
 }
 
 function update_crop(img, selection) {
@@ -202,7 +206,7 @@ function search_image() {
 		contentType: false
 	}).done(function(response, xhr) {
 		var request_time = (new Date().getTime() - start_time) / 1000;
-		var status = 'Retrieved ' + response['results'].length + ' results in ' + request_time + " seconds."
+		var status = 'Retrieved ' + response['results'].length + ' results in ' + request_time + ' seconds.';
 		$('#block_results_status').html(status);
 		construct_results(response['results']);
 		$('#block_results_spinner').hide();
@@ -211,7 +215,7 @@ function search_image() {
 	}).fail(function(xhr, status, error) {
 		console.log(status);
 		console.log(error);
-		var status = 'An error occured while searching: ' + error;
+		var status = '<span class="important">An error occured while searching: ' + error + '</span>';
 		$('#block_results_status').html(status);
 		$('#block_results_spinner').hide();
 		enable_search_button();

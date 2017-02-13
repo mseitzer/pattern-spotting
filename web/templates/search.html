@@ -16,9 +16,16 @@
 			margin-top: 0em;
             border-top: 1px solid #d9d9d9;
 		}
-		.important { color: #336699; }
+		.important { 
+			color: #336699;
+		}
+		.text_small_description {
+			font-size: 0.5em;
+		}
+
 		.block_crop_selection {
 			display: flex;
+			justify-content: space-between;
 		}
 		.block_selection_image {
 			width: 20em;
@@ -26,21 +33,39 @@
 			border: 1px solid #d9d9d9;
 			max-width: 20em;
 			max-height: 20em;
-			display:flex;
-			align-items:center;
-			justify-content:center;
+			display: flex;
+			align-items: center;
+			justify-content: center;
 		}
+		.block_crop_info {
+			position: absolute;
+			bottom: -1.0em;
+			line-height: 1.0em;
+			width: 100%;
+		}
+		.block_crop_info_flex {
+			/* Firefox fix: 
+			 * FF removes flex if element is absolute positioned 
+			 */
+			display: flex;
+			justify-content: space-between;
+		}
+
 		.block_crop_selection_right {
-			margin-left: 2em;
+			display: flex;
+			justify-content: space-between;
+			flex-direction: column;
 		}
 		.block_crop_image {
+			width: 10em;
+			height: 10em;
 			margin-top: 1em;
 			margin-bottom: 1em;
+			border: 1px solid #d9d9d9;
 			position: relative;
 			overflow: hidden;
-			width: 100px;
-			height: 100px;
 		}
+
 		.selection_image {
 			width: auto; 
 			height: auto;
@@ -168,29 +193,29 @@
 	<div id="block_crop_selection">
 		<h3>Choose a selection</h3>
 		<div class="block_crop_selection">
-		<div id="block_selection_image" class="block_selection_image">
-			<!--<p>Chosen image:</p>-->
-			<img id="image" class="selection_image" />
-		</div>
-		<div id="block_crop_selection_right" class="block_crop_selection_right">
-			<!--<p>Selection preview</p>-->
-			<div id="block_crop_image" class="block_crop_image">
-				<img id="crop" style="position: relative;" />
-			</div>	
-			<div id="block_crop_info">
-				<ul>
-					<li>Width, height: <span id="text_image_size"></span></li>
-					<li>Crop (x1:x2, y1:y2): <span id="text_crop_params"></span></li>
-				</ul>
+			<div style="position: relative;">
+				<div id="block_selection_image" class="block_selection_image">
+					<img id="image" class="selection_image" />
+				</div>
+				<div id="block_crop_info" class="block_crop_info">
+					<div class="block_crop_info_flex">
+						<span class="text_small_description" id="text_image_size"></span>
+						<span class="text_small_description" id="text_crop_params"></span>
+					</div>
+				</div>
 			</div>
-			<form method="post" id="form_search">
-				<label for="search_submit" id="search_submit_label" class="input_button">
-					Search with this selection
-				</label>
-				<input type="submit" id="search_submit" class="invisible_button"/>
-				<input type="url" id="input_search_url" name="url" style="display: none" />
-			</form>
-		</div>
+			<div id="block_crop_selection_right" class="block_crop_selection_right">
+				<div id="block_crop_image" class="block_crop_image">
+					<img id="crop" style="position: relative;" />
+				</div>
+				<form method="post" id="form_search">
+					<label for="search_submit" id="search_submit_label" class="input_button">
+						Search with this selection
+					</label>
+					<input type="submit" id="search_submit" class="invisible_button"/>
+					<input type="url" id="input_search_url" name="url" style="display: none" />
+				</form>
+			</div>
 		</div>
 	</div>
 	<div id="block_results">
