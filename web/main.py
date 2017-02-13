@@ -18,6 +18,7 @@ from src.search import SearchModel, search_roi
 
 MAX_FILE_SIZE = 16*1024*1024  # Maximum upload size 16MB
 URL_TIMEOUT = 5  # Maximum time in seconds to wait for connection opening
+DEFAULT_NUM_RESULTS = 5
 
 app = Flask('Historical object retrieval')
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_SIZE
@@ -97,6 +98,14 @@ def search():
     except ValueError:
         raise InvalidUsage('Invalid bounding box parameter', 400)
 
+    try:
+        num_res = int(request.form['num_results'])
+    except ValueError:
+        num_res = DEFAULT_NUM_RESULTS
+    
+    if num_res <= 0 or num_res > 100:
+        num_res = DEFAULT_NUM_RESULTS
+
     img_file = None
     if 'file' in request.files:  # Image upload
         img_file = request.files['file']
@@ -126,8 +135,9 @@ def search():
 
     # Build response
     res_list = []
-    N = 5
-    for index, score, bbox in zip(indices[:N], scores[:N], bboxes[:N]):
+    for index, score, bbox in zip(indices[:num_res], 
+                                  scores[:num_res], 
+                                  bboxes[:num_res]):
         image_path = search_model.get_metadata(index)['image']
         image_info = search_model.query_database(image_path)
         if image_info is None:
