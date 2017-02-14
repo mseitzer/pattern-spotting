@@ -65,8 +65,8 @@ def main(args):
     crops_per_label = {k: v for k, v in crops_per_label.items() 
                        if len(v) >= MIN_RELEVANT_ELEMENTS}
 
-    # For now, just query for the first element of each class
-    queries = {l[0][0]: l[:config['map_n']] for l in crops_per_label.values()}
+    queries = {q[0]: label for label in crops_per_label.values()
+                           for q in label}
     
     if not os.path.exists(args.predictions_file):
         search_model = SearchModel.from_config(config)
