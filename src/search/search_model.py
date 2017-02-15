@@ -1,5 +1,6 @@
 import json
 from os.path import basename, join, isfile
+from functools import lru_cache
 
 import numpy as np
 from sklearn.externals import joblib
@@ -70,9 +71,14 @@ class SearchModel:
     def get_metadata(self, feature_idx):
         return self.feature_metadata[str(feature_idx)]
 
+    @lru_cache(maxsize=128)
     def get_features(self, feature_idx):
-        feature_file_path = self.feature_file_paths[str(feature_idx)]
-        return np.load(feature_file_path)
+        feature_idx = str(feature_idx)
+        feature_file_path = self.feature_file_paths[feature_idx]
+        features = np.load(feature_file_path)
+        self.feature_metadata[feature_idx]['feature_height'] = features.shape[0]
+        self.feature_metadata[feature_idx]['feature_width'] = features.shape[1]
+        return features
 
     def query_database(self, image):
         if self.database:
