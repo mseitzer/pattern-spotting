@@ -99,14 +99,13 @@ class TestLocalization(unittest.TestCase):
                                    [np.nan, np.inf]])
         tests = [((0, 0, 0, 0), [0.0]),
                  ((0, 0, 0, 1), [0.0]),
-                 ((0, 0, 1, 0), [1.0])]
+                 ((0, 0, 1, 0), [1.0]),
+                 ((0, 0, 1, 1), [np.inf])]
         for area, value in tests:
             msg = 'Area {} does not produce expected value {}'.format(area, 
                                                                       value)
             self.assertEqual(_integral_image_sum(integral_image, area),
                              np.array(value), msg)
-        self.assertNotEqual(_integral_image_sum(integral_image, (0, 0, 1, 1)),
-                            np.inf)
 
     def test_compute_area_score(self):
         from src.search.localization import _compute_area_score
