@@ -5,6 +5,13 @@
 		html {
 			overflow-y: scroll; /* make scrollbar always visible */
 		}
+		ul {
+			margin-top: 0em;
+			margin-bottom: 0em;
+			box-sizing: border-box;
+			width: 100%;
+			word-wrap: break-word;
+		}
 		li {
 			font-size: 0.8em;
 			line-height: 1.22em;
@@ -96,17 +103,20 @@
 		}
 		.block_result {
 			display: flex;
-			flex-wrap: wrap;
+			align-items: center;
 			margin-top: 1em;
 			margin-bottom: 1em;
 		}
 		.block_result_image {
 			height: 7.5em;
 			width: 7.5em;
+			flex-shrink: 0;
 		}
 		.block_result_info {
 			display: flex;
 			align-items: center;
+			flex: 1 1 auto;
+			min-width: 0px; /* Hack to get flexbox to shrink */
 		}
 		.result_image {
 			width: 100%;
