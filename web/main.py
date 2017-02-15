@@ -147,7 +147,7 @@ def search():
             'name': os.path.basename(image_path),
             'score': round(score, 4) if not isnan(score) else 'NaN',
             'url': 'static/data/' + image_path,
-            'ext_url': image_info.get('url', ''),
+            'ext_url': image_info.get('external_url', ''),
             'bbox': {'x1': bbox[0], 'y1': bbox[1],
                      'x2': bbox[2], 'y2': bbox[3]}
         }
