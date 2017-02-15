@@ -35,6 +35,21 @@
 			font-size: 0.5em;
 		}
 
+		#block_selection_input {
+			display: flex;
+			justify-content: center;
+			align-items: stretch;
+		}
+		#input_image_url {
+		    /*line-height: 1em;*/
+		    flex-grow: 1;
+		    margin-left: 0.25em;
+		    margin-right: 0.25em;
+		    border: 1px solid #ccc;
+		    padding-left: 5px;
+		    padding-right: 5px;
+		}
+
 		#block_crop_selection {
 			display: flex;
 			justify-content: space-between;
@@ -132,9 +147,7 @@
 			right: 100%;
 			bottom: 100%;
 		}
-		.input_image_url {
-		    line-height: 1.8em;
-		}
+		
 		.input_button {
 			border: 1px solid #ccc;
 			display: inline-block;
@@ -193,15 +206,17 @@
 {% block content %}
 	<section id="section_image_selection">
 		<h3>Choose an image</h3>
-		<label for="input_image_file" class="input_button">
-			<span class="fa fa-cloud-upload"></span>
-		</label>
-		<input type="file" id="input_image_file" class="invisible_button" name="image_file"/>
-		<input type="text" id="input_image_url" name="image_url" class="input_image_url" placeholder="Upload or enter image URL" size="50" />
-		<label for="input_url_button" class="input_button">
-			Get image
-		</label>
-		<input type="button" id="input_url_button" class="invisible_button"/>
+		<div id="block_selection_input">
+			<label for="input_image_file" class="input_button">
+				<span class="fa fa-cloud-upload"></span>
+			</label>
+			<input type="file" id="input_image_file" class="invisible_button" name="image_file"/>
+			<input type="text" id="input_image_url" name="image_url" placeholder="Upload or enter image URL"/>
+			<label for="input_url_button" class="input_button">
+				Get image
+			</label>
+			<input type="button" id="input_url_button" class="invisible_button"/>
+		</div>
 		<hr />
 	</section>
 	<section id="section_crop_selection">
