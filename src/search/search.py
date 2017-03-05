@@ -60,8 +60,8 @@ def _localize(search_model, query_features, feature_idxs, image_shape):
     features_idxs: N indices of the features to query on
     image_shape: shape of the original image in the form of (height, width)
 
-    Returns: array of N bounding boxes in the form of 
-        (left, upper, right, lower).
+    Returns: array of N bounding boxes in the form of (left, upper, 
+        right, lower).
     """
     localization_repr = compute_localization_representation(query_features)
     bounding_boxes = np.empty(len(feature_idxs), dtype=(int, 4))
@@ -73,10 +73,17 @@ def _localize(search_model, query_features, feature_idxs, image_shape):
 
 
 def _compute_bbox_reprs(search_model, bounding_boxes, feature_idxs):
-    """@Todo:
+    """Computes representations for bounding boxes on feature maps
 
-    @Todo: explain
-    @Todo: docs
+    Args:
+    search_model: instance of the SearchModel class
+    bounding_boxes: list of N bounding boxes in the form of (left, upper, 
+        right, lower)
+    feature_idxs: list of N indices specifying the feature maps for 
+        each bounding box
+
+    Returns: array of represesentations in the shape of (N, D), where D is 
+        the representation size
     """
     repr_size = search_model.feature_store.shape[-1]
     bounding_box_reprs = np.empty((len(feature_idxs), repr_size))
@@ -92,17 +99,45 @@ def _compute_bbox_reprs(search_model, bounding_boxes, feature_idxs):
 def _average_query_exp(query_repr, feature_reprs, feature_idxs, top_n=5):
     """Performs average query expansion
 
-    @Todo: explain
-    @Todo: docs
+    Query expansion works by averaging the best N representations found so far 
+    with the query representation. The resulting representation vector is 
+    often more distinctive for the actually searched object than the query 
+    representation. Requerying the feature representations with the averaged 
+    representation thus leads to improved results.
+
+    Args:
+    query_repr: representation of the search query
+    feature_reprs: array of M feature representations
+    feature_idxs: list of M indices specifying the order of representations
+    top_n: how many representations to use in the expansion
+
+    Returns: (indices, similarities), where indices is an array of M entries 
+        specifying the order of entries in feature_reprs by decreasing 
+        similarity, and similarities contains the corresponding similarity 
+        scores for each entry.
     """
     reprs = np.vstack((feature_reprs[feature_idxs[:top_n]], query_repr))
     avg_repr = np.average(reprs, axis=0)
-    indices, similarity = _query(avg_repr, feature_reprs)
-    return indices, similarity
+    indices, similarities = _query(avg_repr, feature_reprs)
+    return indices, similarities
 
 
 def _map_bboxes(search_model, bboxes, features_idxs):
-    """@Todo: docs
+    """Maps bounding boxes on feature maps to bounding boxes on images
+
+    The mapping scales the box by the ratio between image and feature map size.
+    As we have no way (yet) to deduct the feature map shape directly from an 
+    image size for a specific model, we cache the feature map sizes in the 
+    feature metadata.
+
+    Args:
+    search_model: instance of the SearchModel class
+    bboxes: array of the shape (N, 4), where each row specifies the bounding 
+        box in the form of (left, upper, right, lower)
+    feature_idxs: list of N indices specifying the feature maps corresponding 
+        to each bounding box
+
+    Returns: list of N bounding boxes in the form of (left, upper, right, lower)
     """
     mapped_bboxes = []
     for bbox, feature_idx in zip(bboxes, features_idxs):
@@ -116,23 +151,28 @@ def _map_bboxes(search_model, bboxes, features_idxs):
     return mapped_bboxes
 
 
-def search_roi_new(search_model, image, roi=None, top_n=0, localize_n=50,
-                   localize=True, rerank=True, avg_qe=True):
+def search_roi_new(search_model, image, roi=None, top_n=0, localize=True, 
+                   localize_n=50, rerank=True, avg_qe=True):
     """Query the feature store for a region of interest on an image
-    @Todo: Update docs
 
     Args:
     search_model: instance of the SearchModel class
     image: RGB PIL image to take roi of
     roi: bounding box in the form of (left, upper, right, lower)
     top_n: how many query results to return. top_n=0 returns all results
+    localize: perform localization of objects, i.e. find bounding boxes
+    localize_n: how many top images to perform localization on
+    rerank: rerank images after localization by using representations 
+        on the found bounding boxes
+    avg_qe: perform average query expansion
 
     Returns: (indices, similarities, bounding_boxes), where indices is an 
         array of top_n indices of entries in the feature_store sorted 
         by decreasing similarity, similarities contains the 
         corresponding similarity score for each entry, and bounding boxes 
         is a list of tuples of the form (left, upper, right, lower) 
-        specifying the rough location of the found objects.
+        specifying the rough location of the found objects if localizing, 
+        None otherwise.
     """
     assert top_n >= 0
     if rerank:
