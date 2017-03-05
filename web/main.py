@@ -130,7 +130,8 @@ def api_search():
         raise InvalidUsage('Bad bounding box', 400)
 
     try:
-        indices, scores, bboxes = search(search_model, convert_image(crop))
+        indices, scores, bboxes = search(search_model, convert_image(crop),
+                                         top_n=num_res)
     except ValueError as e:
         print('Error while searching for roi: {}'.format(e))
         if app.debug:
@@ -140,9 +141,7 @@ def api_search():
 
     # Build response
     res_list = []
-    for index, score, bbox in zip(indices[:num_res], 
-                                  scores[:num_res], 
-                                  bboxes[:num_res]):
+    for index, score, bbox in zip(indices, scores, bboxes):
         image_path = search_model.get_metadata(index)['image']
         image_info = search_model.query_database(image_path)
         if image_info is None:

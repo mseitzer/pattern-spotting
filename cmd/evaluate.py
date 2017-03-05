@@ -39,9 +39,11 @@ def run_predictions(search_model, queries, rerank_n, map_n):
     predictions = OrderedDict()
     for query in queries:
         image = convert_image(Image.open(query)) 
-        results, _, bboxes = search(search_model, image, top_n=rerank_n)
+        results, _, bboxes = search(search_model, image, 
+                                    top_n=map_n, 
+                                    localize_n=rerank_n)
         predictions[query] = []
-        for result, bbox in zip(results[:map_n], bboxes[:map_n]):
+        for result, bbox in zip(results, bboxes):
             result_path = search_model.get_metadata(result)['image']
             predictions[query].append((result_path, bbox))
     return predictions
