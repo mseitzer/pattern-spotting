@@ -4,7 +4,6 @@ import argparse
 
 import numpy as np
 
-from src.util import crop_image, convert_image
 from src.features import (compute_features, compute_representation, 
                           compute_localization_representation)
 from src.search.search_model import SearchModel
@@ -151,13 +150,13 @@ def _map_bboxes(search_model, bboxes, features_idxs):
     return mapped_bboxes
 
 
-def search_roi(search_model, image, roi=None, top_n=0, localize=True, 
-               localize_n=50, rerank=True, avg_qe=True):
-    """Query the feature store for a region of interest on an image
+def search(search_model, query, top_n=0, localize=True, localize_n=50, 
+           rerank=True, avg_qe=True):
+    """Search the feature store for a query
 
     Args:
     search_model: instance of the SearchModel class
-    image: RGB PIL image to take roi of
+    query: array to search for in the shape of (height, width, 3)
     roi: bounding box in the form of (left, upper, right, lower)
     top_n: how many query results to return. top_n=0 returns all results
     localize: perform localization of objects, i.e. find bounding boxes
@@ -181,9 +180,7 @@ def search_roi(search_model, image, roi=None, top_n=0, localize=True,
     bboxes = None
     reprs = search_model.feature_store
 
-    # @Todo: remove possibility of cropping, directly pass in numpy array
-    crop = convert_image(crop_image(image, roi))
-    query_features = compute_features(search_model.model, crop)
+    query_features = compute_features(search_model.model, query)
     query_repr = compute_representation(query_features, search_model.pca)
 
     retrieval_n = localize_n if localize else top_n
@@ -191,7 +188,7 @@ def search_roi(search_model, image, roi=None, top_n=0, localize=True,
     idxs = feature_idxs
 
     if localize:
-        bboxes = _localize(search_model, query_features, idxs, crop.shape[:2])
+        bboxes = _localize(search_model, query_features, idxs, query.shape[:2])
 
     if rerank:
         reprs = _compute_bbox_reprs(search_model, bboxes, idxs)

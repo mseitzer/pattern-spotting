@@ -12,7 +12,8 @@ sys.path.append(os.path.abspath(os.path.split(os.path.realpath(__file__))[0]
                                 + '/..'))
 from src.data.notary_charters.annotations import (parse_labeled_annotations, 
                                                   write_labeled_annotations)
-from src.search import SearchModel, search_roi
+from src.util import convert_image
+from src.search import SearchModel, search
 
 parser = argparse.ArgumentParser(description='Evaluate a model\'s performance')
 parser.add_argument('config', help='Search model config to use')
@@ -37,10 +38,8 @@ def avg_precision(actual, predictions):
 def run_predictions(search_model, queries, rerank_n, map_n):
     predictions = OrderedDict()
     for query in queries:
-        image = Image.open(query)
-        results, _, bboxes = search_roi(search_model, image, 
-                                        top_n=rerank_n, 
-                                        verbose=False)
+        image = convert_image(Image.open(query)) 
+        results, _, bboxes = search(search_model, image, top_n=rerank_n)
         predictions[query] = []
         for result, bbox in zip(results[:map_n], bboxes[:map_n]):
             result_path = search_model.get_metadata(result)['image']

@@ -14,7 +14,8 @@ from flask import Flask, request, render_template, jsonify
 # Path hack to be able to import from sibling directory
 sys.path.append(os.path.abspath(os.path.split(os.path.realpath(__file__))[0]
                                 + '/..'))
-from src.search import SearchModel, search_roi
+from src.util import convert_image, crop_image
+from src.search import SearchModel, search
 
 MAX_FILE_SIZE = 16*1024*1024  # Maximum upload size 16MB
 URL_TIMEOUT = 5  # Maximum time in seconds to wait for connection opening
@@ -87,7 +88,7 @@ def index():
 
 
 @app.route("/search", methods=['POST'])
-def search():
+def api_search():
     if 'x1' not in request.form or 'y1' not in request.form \
         or 'x2' not in request.form or 'y2' not in request.form:
         raise InvalidUsage('Missing bounding box parameter', 400)
@@ -119,13 +120,17 @@ def search():
         raise InvalidUsage('No image source', 400)
 
     try:
-        image = Image.open(img_file)
-        image = image.convert('RGB')
+        image = Image.open(img_file).convert('RGB')
     except (IOError, OSError):
         raise InvalidUsage('Error decoding image', 415)
 
     try:
-        indices, scores, bboxes = search_roi(search_model, image, bounding_box)
+        crop = crop_image(image, bounding_box)
+    except ValueError as e:
+        raise InvalidUsage('Bad bounding box', 400)
+
+    try:
+        indices, scores, bboxes = search(search_model, convert_image(crop))
     except ValueError as e:
         print('Error while searching for roi: {}'.format(e))
         if app.debug:
@@ -163,9 +168,9 @@ if __name__ == "__main__":
         app.debug = True
 
     if args.test:
-        # In test mode, overwrite the default search_roi implementation
-        global search_roi
-        from mock_search import search_roi
+        # In test mode, overwrite the default search implementation
+        global search
+        from mock_search import search
 
     with open(args.config, 'r') as f:
         config = json.load(f)

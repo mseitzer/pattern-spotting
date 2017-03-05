@@ -9,7 +9,8 @@ from PIL import Image, ImageDraw
 # Path hack to be able to import from sibling directory
 sys.path.append(os.path.abspath(os.path.split(os.path.realpath(__file__))[0]
                                 + '/..'))
-from src.search import SearchModel, search_roi
+from src.util import convert_image, crop_image
+from src.search import SearchModel, search
 
 parser = argparse.ArgumentParser(description=
                                  'Query a database for similar images')
@@ -54,13 +55,12 @@ def main(args):
     search_model = SearchModel(args.model, args.features, args.database)
 
     for image_path in query_images:
-        image = Image.open(image_path)
-        image = image.convert('RGB')
-
-        results, similarities, bboxes = search_roi(search_model, 
-                                                   image, 
-                                                   roi=bbox,
-                                                   top_n=0)
+        image = Image.open(image_path).convert('RGB')
+        if bbox:
+            image = crop_image(image, bbox)
+        image = convert_image(image)
+        
+        results, similarities, bboxes = search(search_model, image, top_n=0)
 
         N = args.top_n
         print('Top {} results for query image {}'.format(N, image_path))
