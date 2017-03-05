@@ -39,6 +39,7 @@ dependencies:
 - libtiff=4.0.6=2
 - libxcb=1.12=0
 - libxml2=2.9.2=0
+- llvmlite=0.16.0=py35_0
 - markupsafe=0.23=py35_2
 - matplotlib=1.5.3=np111py35_0
 - mistune=0.7.3=py35_0
@@ -50,6 +51,7 @@ dependencies:
 - nbformat=4.1.0=py35_0
 - nbpresent=3.0.2=py35_0
 - notebook=4.2.3=py35_0
+- numba=0.31.0=np111py35_0
 - numpy=1.11.2=py35_0
 - openssl=1.0.2j=0
 - path.py=8.2.1=py35_0
