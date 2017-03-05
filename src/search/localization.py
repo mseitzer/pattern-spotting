@@ -100,7 +100,7 @@ def _compute_area_score(query, area, integral_image, exp=AML_EXP):
     max_pool = _integral_image_sum(integral_image, area)
     max_pool = normalize(np.power(max_pool, 1.0 / exp))
     score = max_pool.dot(query.T)
-    return np.clip(score, -1.0, 1.0)
+    return np.clip(score, -1.0, 1.0).item()
 
 
 def _area_refinement(query, area, area_score, integral_image, 

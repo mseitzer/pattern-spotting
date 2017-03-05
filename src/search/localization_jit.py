@@ -95,12 +95,12 @@ def _compute_area_score(query, area, integral_image, exp=AML_EXP):
     max_pool = _integral_image_sum(integral_image, area)
     max_pool = np.power(max_pool, 1.0 / exp)
     max_pool = max_pool / np.linalg.norm(max_pool, 2)
-    score = np.dot(max_pool, query.T)
+    score = np.dot(max_pool, query.T).item()
     return min(max(score, -1.0), 1.0)  # Keep score between [-1.0, 1.0]
 
 
 @jit(nopython=True)
-def _area_refinement(query, area, area_score, integral_image, 
+def _area_refinement(query, init_area, init_area_score, integral_image, 
                     iterations=10, max_step=3, exp=AML_EXP):
     """Improves bounding box by varying the box coordinates in an iterative 
     descent manner.
@@ -118,8 +118,9 @@ def _area_refinement(query, area, area_score, integral_image,
 
     Args:
     query: L2 normalized representation of the object to find of shape (1, dim)
-    area: bounding box to improve in the form of [left, upper, right, lower]
-    area_score: score the bounding box to improve achieves
+    init_area: bounding box to improve in the form of (left, upper, 
+        right, lower)
+    init_area_score: score the bounding box to improve achieves
     integral_image: integral image of features on which the bounding box lies
     iterations: Number of times to run the improvement for each step size
     max_step: step sizes get varied from [1, max_step]
@@ -129,8 +130,8 @@ def _area_refinement(query, area, area_score, integral_image,
     Improved bounding box in the form of (left, upper, right, lower)
     """
     height, width, _ = integral_image.shape
-    best_area = area
-    best_score = area_score
+    best_area = list(init_area)
+    best_score = init_area_score
 
     for step in range(max_step, 0, -1):
         for it in range(iterations):
@@ -162,7 +163,7 @@ def _area_refinement(query, area, area_score, integral_image,
             else:
                 best_area = iter_best_area
                 best_score = iter_best_score
-    return best_area
+    return best_area[0], best_area[1], best_area[2], best_area[3]
 
 
 def localize(query, 
@@ -204,5 +205,5 @@ def localize(query,
             best_area = area
             best_score = score
 
-    return _area_refinement(query, list(best_area), best_score, integral_image, 
+    return _area_refinement(query, best_area, best_score, integral_image, 
                             exp=AML_EXP)
