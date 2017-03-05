@@ -151,8 +151,8 @@ def _map_bboxes(search_model, bboxes, features_idxs):
     return mapped_bboxes
 
 
-def search_roi_new(search_model, image, roi=None, top_n=0, localize=True, 
-                   localize_n=50, rerank=True, avg_qe=True):
+def search_roi(search_model, image, roi=None, top_n=0, localize=True, 
+               localize_n=50, rerank=True, avg_qe=True):
     """Query the feature store for a region of interest on an image
 
     Args:
@@ -207,93 +207,3 @@ def search_roi_new(search_model, image, roi=None, top_n=0, localize=True,
         bboxes = _map_bboxes(search_model, bboxes[idxs], feature_idxs[idxs])
 
     return feature_idxs[idxs], sims, bboxes
-
-
-def search_roi(search_model, image, roi=None, top_n=0, verbose=True):
-    """Query the feature store for a region of interest on an image
-
-    Args:
-    search_model: instance of the SearchModel class
-    image: RGB PIL image to take roi of
-    roi: bounding box in the form of (left, upper, right, lower)
-    top_n: how many query results to return. top_n=0 returns all results
-
-    Returns: (indices, similarities, bounding_boxes), where indices is an 
-        array of top_n indices of entries in the feature_store sorted 
-        by decreasing similarity, similarities contains the 
-        corresponding similarity score for each entry, and bounding boxes 
-        is a list of tuples of the form (left, upper, right, lower) 
-        specifying the rough location of the found objects.
-    """
-    assert top_n >= 0
-    AVG_QUERY_EXP_N = 5  # How many top entries to use in query expansion
-
-    crop = convert_image(crop_image(image, roi))
-
-    query_features = compute_features(search_model.model, crop)
-    query_repr = compute_representation(query_features, search_model.pca)
-    localization_repr = compute_localization_representation(query_features)
-
-    scale_x = crop.shape[1] / query_features.shape[1]
-    scale_y = crop.shape[0] / query_features.shape[0]
-
-    if verbose:
-        from timeit import default_timer as timer
-        start = timer()
-
-    # Step 1: initial retrieval
-    indices, sims = _query(query_repr, search_model.feature_store, top_n)
-
-    if verbose:
-        end = timer()
-        print('Retrieval took {:.6f} seconds'.format(end-start))
-        start = timer()
-
-    # Step 2: localization and re-ranking
-    feature_shapes = {}
-    bounding_boxes = np.empty(len(indices), dtype=(int, 4))
-    bounding_box_reprs = np.empty((len(indices), query_repr.shape[-1]))
-    
-    for idx, feature_idx in enumerate(indices):
-        features = search_model.get_features(feature_idx)
-        feature_shapes[feature_idx] = features.shape
-
-        bounding_boxes[idx] = localize(localization_repr, features, 
-                                       crop.shape[:2])
-
-        x1, y1, x2, y2 = bounding_boxes[idx]
-        bbox_repr = compute_representation(features[y1:y2+1, x1:x2+1], 
-                                           search_model.pca)
-        bounding_box_reprs[idx] = bbox_repr
-        
-    reranking_indices, sims = _query(query_repr, bounding_box_reprs)
-
-    if verbose:
-        end = timer()
-        print('Localization took {:.6f} seconds'.format(end-start))
-        start = timer()
-
-    # Step 3: average query expansion
-    best_rerank_indices = reranking_indices[:AVG_QUERY_EXP_N]
-    avg_repr = np.average(np.vstack((bounding_box_reprs[best_rerank_indices], 
-                                     query_repr)), axis=0)
-    exp_indices, similarity = _query(avg_repr, bounding_box_reprs)
-
-    if verbose:
-        end = timer()
-        print('Average query expansion took {:.6f} seconds'.format(end-start))
-
-    # Construct bounding boxes return list
-    bbox_list = []
-    for feature_idx, bbox in zip(indices[exp_indices], 
-                                 bounding_boxes[exp_indices]):
-        # Map bounding box coordinates to image coordinates
-        metadata = search_model.get_metadata(feature_idx)
-        scale_x = metadata['width'] / feature_shapes[feature_idx][1]
-        scale_y = metadata['height'] / feature_shapes[feature_idx][0]
-        bbox_list.append((round(bbox.item(0)*scale_x), 
-                          round(bbox.item(1)*scale_y), 
-                          round(bbox.item(2)*scale_x), 
-                          round(bbox.item(3)*scale_y)))
-
-    return indices[exp_indices], similarity, bbox_list
