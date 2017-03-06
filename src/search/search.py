@@ -1,13 +1,14 @@
 import os
 import sys
 import argparse
+import threading
 
 import numpy as np
 
 from src.features import (compute_features, compute_representation, 
                           compute_localization_representation)
 from src.search.search_model import SearchModel
-from src.search.localization import localize
+from src.search.localization_jit import localize
 
 def _descending_argsort(array, k):
     """Return indices that index the highest k values in an array"""
@@ -48,6 +49,43 @@ def _query(query_features, feature_store, top_n=0):
         indices = _ascending_argsort(similarity, k)
     
     return indices, similarity[indices]
+
+
+def _localize_parallel(search_model, query_features, feature_idxs, image_shape,
+                       n_threads=4):
+    """Localizes where a query occurs on a number of features
+
+    Args:
+    search_model: instance of the SearchModel class
+    query_features: features of the image to query for
+    features_idxs: N indices of the features to query on
+    image_shape: shape of the original image in the form of (height, width)
+    n_threads: number of threads to use in parallel
+
+    Returns: array of N bounding boxes in the form of (left, upper, 
+        right, lower).
+    """
+    def f(res, feature_idxs):
+        for idx, feature_idx in enumerate(feature_idxs):
+            features = search_model.get_features(feature_idx)
+            res[idx] = localize(localization_repr, features, image_shape)
+
+    localization_repr = compute_localization_representation(query_features)
+    bounding_boxes = np.empty(len(feature_idxs), dtype=(int, 4))
+
+    threads = []
+    chunk_len = int(np.ceil(len(feature_idxs) / n_threads))
+    for i in range(n_threads):
+        args = [bounding_boxes[i * chunk_len:(i + 1) * chunk_len],
+                feature_idxs[i * chunk_len:(i + 1) * chunk_len]]
+        threads.append(threading.Thread(target=f, args=args))
+
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    return bounding_boxes
 
 
 def _localize(search_model, query_features, feature_idxs, image_shape):
@@ -188,7 +226,8 @@ def search(search_model, query, top_n=0, localize=True, localize_n=50,
     idxs = feature_idxs
 
     if localize:
-        bboxes = _localize(search_model, query_features, idxs, query.shape[:2])
+        bboxes = _localize_parallel(search_model, query_features, idxs, 
+                                    query.shape[:2])
 
     if rerank:
         reprs = _compute_bbox_reprs(search_model, bboxes, idxs)
