@@ -8,7 +8,7 @@ from numba import jit
 # According to the paper, 10 is a good choice.
 AML_EXP = 10.0
 
-@jit(nopython=True)
+@jit(nopython=True, nogil=True)
 def _area_generator(shape, step_size, aspect_ratio, 
                     max_aspect_ratio_div=1.1):
     """A generator which returns areas of a rectangle whose aspect ratio 
@@ -45,20 +45,35 @@ def _area_generator(shape, step_size, aspect_ratio,
                     yield (x1, y1, x2, y2)
 
 
+@jit(nopython=True, nogil=True)
 def _compute_integral_image(image, exp=1):
-    """Computes integral image.
+    """Computes channelwise integral image
 
     Optionally raises each entry to the power of exp before. 
+    
+    Args:
+    image: image of shape (height, width, channels)
+    exp: exponent to raise each entry to
+
+    Returns: integral image of shape (height, width, channels)
     """
-    # @Todo: jittify function
     image = image.astype(np.float64)
     image = np.power(image, exp)
-    # Apply cumulative sum along both axis for integral image
-    integral_image = np.cumsum(np.cumsum(image, axis=0), axis=1)
-    return np.nan_to_num(integral_image)
+
+    for i in range(image.shape[0]):
+        for k in range(image.shape[2]):
+            image[i,:,k] = np.cumsum(image[i,:,k])
+
+    for j in range(image.shape[1]):
+        for k in range(image.shape[2]):
+            image[:,j,k] = np.cumsum(image[:,j,k])
+
+    # Substitute NaNs with zeros. This assumes that the image contains no 
+    # negative entries.
+    return np.fmax(0.0, image)
 
 
-@jit(nopython=True)
+@jit(nopython=True, nogil=True)
 def _integral_image_sum(integral_image, area):
     """Computes sum of area on an integral image
 
@@ -82,7 +97,7 @@ def _integral_image_sum(integral_image, area):
     return value
 
 
-@jit(nopython=True)
+@jit(nopython=True, nogil=True)
 def _compute_area_score(query, area, integral_image, exp=AML_EXP):
     """Computes cosine similarity between query representation and bounding box
 
@@ -99,7 +114,7 @@ def _compute_area_score(query, area, integral_image, exp=AML_EXP):
     return min(max(score, -1.0), 1.0)  # Keep score between [-1.0, 1.0]
 
 
-@jit(nopython=True)
+@jit(nopython=True, nogil=True)
 def _area_refinement(query, init_area, init_area_score, integral_image, 
                     iterations=10, max_step=3, exp=AML_EXP):
     """Improves bounding box by varying the box coordinates in an iterative 
@@ -166,6 +181,7 @@ def _area_refinement(query, init_area, init_area_score, integral_image,
     return best_area[0], best_area[1], best_area[2], best_area[3]
 
 
+@jit(nopython=True, nogil=True)
 def localize(query, 
              features, 
              query_image_shape, 
@@ -187,11 +203,10 @@ def localize(query,
     Returns: bounding box on features fitting best to the query, in the form 
         of (left, upper, right, lower), and the score on of this bounding box
     """
-    # @Todo: jittify
     assert len(query_image_shape) == 2
     assert query.shape[-1] == features.shape[-1]
 
-    query = query.astype(np.float64)
+    query_f64 = query.astype(np.float64)
     query_aspect_ratio = query_image_shape[1] / query_image_shape[0]
 
     integral_image = _compute_integral_image(features, AML_EXP)
@@ -200,10 +215,10 @@ def localize(query,
     best_score = -np.inf
     for area in _area_generator(integral_image.shape[:2], step_size, 
                                 query_aspect_ratio, aspect_ratio_factor):
-        score = _compute_area_score(query, area, integral_image, AML_EXP)
+        score = _compute_area_score(query_f64, area, integral_image, AML_EXP)
         if score > best_score:
             best_area = area
             best_score = score
 
-    return _area_refinement(query, best_area, best_score, integral_image, 
+    return _area_refinement(query_f64, best_area, best_score, integral_image, 
                             exp=AML_EXP)

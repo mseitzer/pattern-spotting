@@ -36,21 +36,23 @@ def test_area_generator(test, fn):
 
 
 def test_compute_integral_image(test, fn):
-    image = np.array([[1.0, 2.0], [3.0, 4.0]])
-    expected = np.array([[1.0, 5.0], [10.0, 30.0]])
+    image = np.array([[[1.0], [2.0]], [[3.0], [4.0]]])
+    expected = np.array([[[1.0], [5.0]], [[10.0], [30.0]]])
     test.assertEqual(fn(image, exp=2), expected)
 
-    image = np.ones((5,5))
     expected = np.array([[1,  2,  3,  4,  5],
                          [2,  4,  6,  8, 10],
                          [3,  6,  9, 12, 15],
                          [4,  8, 12, 16, 20],
                          [5, 10, 15, 20, 25]])
-    test.assertEqual(fn(image), expected)
 
     image = np.ones((5,5,5))
     expected = np.repeat(np.expand_dims(expected, axis=2), 5, axis=2)
     test.assertEqual(fn(image), expected)
+
+    image = np.array([[[2.0], [np.nan], [2.0]]])
+    expected = np.array([[[8.0], [0.0], [0.0]]])
+    test.assertEqual(fn(image, exp=3), expected)
 
 
 def test_integral_image_sum(test, fn):
