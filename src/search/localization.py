@@ -48,9 +48,15 @@ def _area_generator(shape, step_size,
 
 
 def _compute_integral_image(image, exp=1):
-    """Computes integral image.
+    """Computes channelwise integral image
 
     Optionally raises each entry to the power of exp before. 
+    
+    Args:
+    image: image of shape (height, width, channels)
+    exp: exponent to raise each entry to
+
+    Returns: integral image of shape (height, width, channels)
     """
     image = image.astype(np.float64)
     image = np.power(image, exp)
