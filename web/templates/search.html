@@ -245,13 +245,26 @@
 					<label for="num_results" class="input_label">
 						Number of results:
 					</label>
-					<select id="num_results" name="num_results" style="margin-bottom: 0.75em;">
-					<!-- <select id="num_results" name="num_results" style="margin-bottom: 0.75em; display: inline-block; vertical-align: center;"> -->
+					<select id="num_results" name="num_results">
 						<option value="5" selected>5</option>
 						<option value="10">10</option>
 						<option value="25">25</option>
 						<option value="50">50</option>
 					</select><br/>
+
+					<input type="checkbox" id="mode_localization" name="localization" checked/>
+					<label for="mode_localization" class="input_label">
+						Localization
+					</label>
+					<input type="checkbox" id="mode_rerank" name="rerank" checked/>
+					<label for="mode_rerank" class="input_label">
+						Rerank
+					</label><br/>
+					<input type="checkbox" id="mode_avgqe" name="avg_qe" checked/>
+					<label for="mode_avgqe" class="input_label">
+						Average Query Expansion
+					</label>		
+
 					<label for="search_submit" id="search_submit_label" class="input_button">
 						Search with selection
 					</label>

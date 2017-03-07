@@ -47,6 +47,19 @@ $('#input_image_file').change(function() {
 	load_image_from_file(this);
 });
 
+$('#mode_rerank').click(function() {
+	if($(this).prop('checked')) {
+		$('#mode_localization').prop('checked', true);
+	}
+});
+
+$('#mode_localization').click(function(e) {
+	if($('#mode_rerank').prop('checked')) {
+		e.preventDefault();
+		return false;
+	}
+});
+
 $('#form_search').submit(function(e) {
 	e.preventDefault();
 	search_image();
@@ -216,7 +229,7 @@ function search_image() {
 	}).fail(function(xhr, status, error) {
 		console.log(status);
 		console.log(error);
-		var status = '<span class="important">An error occured while searching: ' + error + '</span>';
+		var status = '<span class="important">An error occured while searching: ' + xhr.responseJSON['message'] + '</span>';
 		$('#block_results_status').html(status);
 		$('#block_results_spinner').hide();
 		enable_search_button();
