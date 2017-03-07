@@ -221,7 +221,7 @@ def search(search_model, query, top_n=0, localize=True, localize_n=50,
     query_features = compute_features(search_model.model, query)
     query_repr = compute_representation(query_features, search_model.pca)
 
-    retrieval_n = localize_n if localize else top_n
+    retrieval_n = localize_n if localize else 0
     feature_idxs, sims = _query(query_repr, reprs, retrieval_n)
     idxs = feature_idxs
 
