@@ -21,7 +21,7 @@ def crop_image(image, bounding_box):
         x1, y1, x2, y2 = bounding_box
     x1, y1, x2, y2 = np.clip([x1, y1, x2, y2], 0,
                              [width, height, width, height])
-    if x1 > x2 or y1 > y2:
+    if x1 >= x2 or y1 >= y2:
         raise ValueError('Region of interest out of range')
 
     # PIL crop excludes x2/y2 coordinates from the crop
