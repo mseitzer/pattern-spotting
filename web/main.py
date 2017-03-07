@@ -36,6 +36,13 @@ parser.add_argument('--test', action='store_true',
 parser.add_argument('--host', default='localhost',
                     help='Host address to listen on')
 
+class SearchMode:
+    def __init__(self, localize, rerank, avg_qe):
+        self.localize = localize
+        self.rerank = rerank
+        self.avg_qe = avg_qe
+
+
 class InvalidUsage(Exception):
     def __init__(self, message, status_code=400, payload=None):
         Exception.__init__(self)
@@ -95,10 +102,14 @@ def parse_search_parameters(form):
     if num_res <= 0 or num_res > 100:
         num_res = DEFAULT_NUM_RESULTS
 
-    return bounding_box, num_res
+    search_mode = SearchMode('localization' in form, 
+                             'rerank' in form,
+                             'avg_qe' in form)
+
+    return bounding_box, num_res, search_mode
 
 
-def search_image(image, bounding_box, top_n):
+def search_image(image, bounding_box, top_n, search_mode):
     try:
         image = Image.open(image).convert('RGB')
     except (IOError, OSError):
@@ -111,13 +122,19 @@ def search_image(image, bounding_box, top_n):
 
     try:
         indices, scores, bboxes = search(search_model, convert_image(crop),
-                                         top_n=top_n)
+                                         top_n=top_n,
+                                         localize=search_mode.localize,
+                                         rerank=search_mode.rerank,
+                                         avg_qe=search_mode.avg_qe)
     except ValueError as e:
         print('Error while searching for roi: {}'.format(e))
         if app.debug:
             import traceback
             traceback.print_tb(e.__traceback__)
         raise InvalidUsage('Internal error while searching', 400)
+
+    if bboxes is None:
+        bboxes = [None for i in range(len(indices))]
 
     # Build response
     results = []
@@ -131,10 +148,11 @@ def search_image(image, bounding_box, top_n):
             'name': os.path.basename(image_path),
             'score': round(score, 4) if not isnan(score) else 'NaN',
             'url': 'static/data/' + image_path,
-            'ext_url': image_info.get('external_url', ''),
-            'bbox': {'x1': bbox[0], 'y1': bbox[1],
-                     'x2': bbox[2], 'y2': bbox[3]}
+            'ext_url': image_info.get('external_url', '')
         }
+        if bbox:
+            image_dict['bbox'] = {'x1': bbox[0], 'y1': bbox[1],
+                                  'x2': bbox[2], 'y2': bbox[3]}
         results.append(image_dict)
     return results
 
@@ -153,20 +171,20 @@ def index():
 
 @app.route("/search_file", methods=['POST'])
 def search_file():
-    bounding_box, num_res = parse_search_parameters(request.form)
+    search_args = parse_search_parameters(request.form)
 
     if 'file' in request.files:  # Image upload
         img_file = request.files['file']
     else:
         raise InvalidUsage('No image source', 400)
 
-    results = search_image(img_file, bounding_box, num_res)
+    results = search_image(img_file, *search_args)
     return jsonify(**{'results': results})
 
 
 @app.route("/search_url", methods=['POST'])
 def search_url():
-    bounding_box, num_res = parse_search_parameters(request.form)
+    search_args = parse_search_parameters(request.form)
 
     if 'url' in request.form:  # External image
         url = request.form['url']
@@ -176,7 +194,7 @@ def search_url():
     else:
         raise InvalidUsage('No image source', 400)
 
-    results = search_image(img_file, bounding_box, num_res)
+    results = search_image(img_file, *search_args)
     return jsonify(**{'results': results})
 
 
