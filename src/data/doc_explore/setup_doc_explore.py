@@ -11,7 +11,10 @@ import argparse
 import subprocess
 import zipfile
 import shutil
+from glob import glob
 from urllib.parse import urlparse
+
+from PIL import Image
 
 parser = argparse.ArgumentParser(description='Setup DocExplore dataset')
 parser.add_argument('-o', '--output', dest='target_dir',
@@ -64,12 +67,23 @@ def extract_zip(file, target_dir, lvl=0):
 def main(args):
     args = parser.parse_args(args)
 
+    if not os.path.exists(args.target_dir):
+        os.mkdir(args.target_dir)
+
     images_path = maybe_download_and_verify(args.images_zip, IMAGES_MD5)
     queries_path = maybe_download_and_verify(args.queries_zip, QUERIES_MD5)
     
     extract_zip(images_path, args.target_dir, lvl=1)
     extract_zip(queries_path, os.path.join(args.target_dir, 'query'), lvl=1)
 
+    for file in glob('{}/*.jpg'.format(args.target_dir)):
+        with Image.open(file) as img:
+            size = img.size
+            if size[0] > 1024 or size[1] > 1024:
+                img.thumbnail((1024, 1024))
+                print('Image {} has size {}. '
+                      'Resizing to {}'.format(file, size, img.size))
+                img.save(file)
 
 
 if __name__ == '__main__':
