@@ -109,7 +109,6 @@ dependencies:
   - jupyter-console==5.1.0
   - jupyter-core==4.3.0
   - keras==1.2.2
-  - nb-anacondacloud==1.2.0
   - nb-conda==2.0.0
   - nb-conda-kernels==2.0.0
   - packaging==16.8
