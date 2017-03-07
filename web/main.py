@@ -14,6 +14,7 @@ from flask import Flask, request, render_template, jsonify
 # Path hack to be able to import from sibling directory
 sys.path.append(os.path.abspath(os.path.split(os.path.realpath(__file__))[0]
                                 + '/..'))
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from src.util import convert_image, crop_image
 from src.search import SearchModel, search
 
@@ -75,52 +76,31 @@ def download_file(url):
     return file
 
 
-@app.errorhandler(InvalidUsage)
-def handle_invalid_usage(error):
-    response = jsonify(error.to_dict())
-    response.status_code = error.status_code
-    return response
-
-
-@app.route("/")
-def index():
-    return render_template('search.html')
-
-
-@app.route("/search", methods=['POST'])
-def api_search():
-    if 'x1' not in request.form or 'y1' not in request.form \
-        or 'x2' not in request.form or 'y2' not in request.form:
+def parse_search_parameters(form):
+    if 'x1' not in form or 'y1' not in form \
+        or 'x2' not in form or 'y2' not in form:
         raise InvalidUsage('Missing bounding box parameter', 400)
 
     try:
-        bounding_box = (int(request.form['x1']), int(request.form['y1']),
-                        int(request.form['x2']), int(request.form['y2']))
+        bounding_box = (int(form['x1']), int(form['y1']),
+                        int(form['x2']), int(form['y2']))
     except ValueError:
         raise InvalidUsage('Invalid bounding box parameter', 400)
 
     try:
-        num_res = int(request.form['num_results'])
+        num_res = int(form['num_results'])
     except ValueError:
         num_res = DEFAULT_NUM_RESULTS
     
     if num_res <= 0 or num_res > 100:
         num_res = DEFAULT_NUM_RESULTS
 
-    img_file = None
-    if 'file' in request.files:  # Image upload
-        img_file = request.files['file']
-    elif 'url' in request.form:  # External image
-        url = request.form['url']
-        img_file = download_file(url)
-        if not img_file:
-            raise InvalidUsage('Error downloading external image', 400)
+    return bounding_box, num_res
 
-    if not img_file:
-        raise InvalidUsage('No image source', 400)
 
+def search_image(image, bounding_box, top_n):
     try:
-        image = Image.open(img_file).convert('RGB')
+        image = Image.open(image).convert('RGB')
     except (IOError, OSError):
         raise InvalidUsage('Error decoding image', 415)
 
@@ -131,7 +111,7 @@ def api_search():
 
     try:
         indices, scores, bboxes = search(search_model, convert_image(crop),
-                                         top_n=num_res)
+                                         top_n=top_n)
     except ValueError as e:
         print('Error while searching for roi: {}'.format(e))
         if app.debug:
@@ -140,7 +120,7 @@ def api_search():
         raise InvalidUsage('Internal error while searching', 400)
 
     # Build response
-    res_list = []
+    results = []
     for index, score, bbox in zip(indices, scores, bboxes):
         image_path = search_model.get_metadata(index)['image']
         image_info = search_model.query_database(image_path)
@@ -155,10 +135,50 @@ def api_search():
             'bbox': {'x1': bbox[0], 'y1': bbox[1],
                      'x2': bbox[2], 'y2': bbox[3]}
         }
+        results.append(image_dict)
+    return results
 
-        res_list.append(image_dict)
 
-    return jsonify(**{'results': res_list})
+@app.errorhandler(InvalidUsage)
+def handle_invalid_usage(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    return response
+
+
+@app.route("/")
+def index():
+    return render_template('search.html')
+
+
+@app.route("/search_file", methods=['POST'])
+def search_file():
+    bounding_box, num_res = parse_search_parameters(request.form)
+
+    if 'file' in request.files:  # Image upload
+        img_file = request.files['file']
+    else:
+        raise InvalidUsage('No image source', 400)
+
+    results = search_image(img_file, bounding_box, num_res)
+    return jsonify(**{'results': results})
+
+
+@app.route("/search_url", methods=['POST'])
+def search_url():
+    bounding_box, num_res = parse_search_parameters(request.form)
+
+    if 'url' in request.form:  # External image
+        url = request.form['url']
+        img_file = download_file(url)
+        if not img_file:
+            raise InvalidUsage('Error downloading external image', 400)
+    else:
+        raise InvalidUsage('No image source', 400)
+
+    results = search_image(img_file, bounding_box, num_res)
+    return jsonify(**{'results': results})
+
 
 if __name__ == "__main__":
     args = parser.parse_args(sys.argv[1:])

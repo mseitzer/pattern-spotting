@@ -165,6 +165,7 @@ function enable_search_button() {
 function search_image() {
 	disable_search_button();
 
+	var url = '';
 	var fd = new FormData($('#form_search').get(0));
 	if(!fd.get('url') || fd.get('url') === "") {
 		fd.delete('url');
@@ -173,6 +174,9 @@ function search_image() {
 	var file_node = $('#input_image_file').get(0);
 	if(file_node.files && file_node.files[0]) {
 		fd.append('file', file_node.files[0]);
+		url = 'search_file';
+	} else {
+		url = 'search_url';
 	}
 
 	if(!fd.has('file') && !fd.has('url')) {
@@ -195,7 +199,7 @@ function search_image() {
 
 	var start_time = new Date().getTime();
 	$.ajax({
-		url: 'search',
+		url: url,
 		type: 'POST',
 		dataType: 'json',
 		data: fd,
