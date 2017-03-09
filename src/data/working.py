@@ -13,7 +13,7 @@ parser.add_argument('--data-dir', required=True, help='Data directory')
 parser.add_argument('--out-dir', required=True, help='Output directory')
 
 prefix = 'raw/notary_charters/notary_charters/'
-working_set = [
+WORKING_SET = [
     'BayHStA-KUPassauStNikola_14220924_r.jpg',
     'BayHStA-KUPassauStNikola_14230223_r.jpg',
     'BayHStA-KUPassauStNikola_14550521_A_r.jpg',
@@ -48,19 +48,65 @@ working_set = [
     'StadtAWo_Abt1AI_0348_14080829_r.JPG',
 ]
 
+QUERIES = {
+    'BayHStA-KUPassauStNikola_14220924_r.jpg': [
+        ('vase', (116, 577, 116+98, 577+121))
+    ],
+    'BayHStA-KUPassauStNikola_14230223_r.jpg': [
+        ('vase', (123, 411, 125+123, 411+158))
+    ],
+    'BayHStA-KUPassauStNikola_14550521_A_r.jpg': [
+        ('cross', (143, 722, 143+156, 722+163))
+    ],
+    'BayHStA-KUPassauStNikola_14550521_B_r.jpg': [
+        ('cross', (108, 816, 108+193, 816+163))
+    ],
+    'BayHStA-KUPassauStNikola_14560412_r.jpg': [
+        ('cross', (98, 637, 98+192, 637+189))
+    ]
+}
+
 MAX_SIZE = 1000  # Maximum height or width of the images (resizes if necessary)
 
 def main(args):
     args = parser.parse_args(args)
 
-    for idx, path in enumerate(working_set):
-        path = os.path.join(args.data_dir, prefix, path)
-        out_path = os.path.join(args.out_dir, 
-                                '{:02d}.jpg'.format(idx+1))
+    queries_per_label = {}
+    query_dir = os.path.join(args.out_dir, 'query')
+    if not os.path.exists(query_dir):
+        os.mkdir(query_dir)
+
+    for idx, file in enumerate(WORKING_SET):
+        path = os.path.join(args.data_dir, prefix, file)
+        out_name = '{:02d}.jpg'.format(idx+1)
+        out_path = os.path.join(args.out_dir, out_name)
 
         img = Image.open(path)
         img.thumbnail((MAX_SIZE, MAX_SIZE))
         img.save(out_path)
+
+        if file in QUERIES:
+            for label, bbox in QUERIES[file]:
+                crop = img.crop(bbox)
+
+                prev_queries = queries_per_label.get(label, [])
+                query_name = '{}_{}'.format(len(prev_queries), out_name)
+
+                label_dir = os.path.join(query_dir, label)
+                if not os.path.exists(label_dir):
+                    os.mkdir(label_dir)
+
+                crop.save(os.path.join(label_dir, query_name))
+
+                prev_queries.append((query_name, bbox))
+                queries_per_label[label] = prev_queries
+
+    with open(os.path.join(query_dir, 'labeled_crops.csv'), 'w') as f:
+        for label, queries in queries_per_label.items():
+            for query in queries:
+                query_name, bbox = query
+                bbox_str = ' '.join([str(c) for c in bbox])
+                f.write('{};{};{}\n'.format(query_name, bbox_str, label))
 
 if __name__ == '__main__':
     main(sys.argv[1:])
