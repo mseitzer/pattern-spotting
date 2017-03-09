@@ -97,7 +97,7 @@ def main(args):
 
     # Filter queries
     if '0' in crops_per_label: 
-        del crops_per_label[0]
+        del crops_per_label['0']
     crops_per_label = {k: v for k, v in crops_per_label.items() 
                        if len(v) >= MIN_RELEVANT_ELEMENTS}
 
