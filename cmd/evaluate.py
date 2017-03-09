@@ -96,7 +96,8 @@ def main(args):
         crops_per_label[label].append((crop_path, bbox))
 
     # Filter queries
-    if 0 in crops_per_label: del crops_per_label[0]
+    if '0' in crops_per_label: 
+        del crops_per_label[0]
     crops_per_label = {k: v for k, v in crops_per_label.items() 
                        if len(v) >= MIN_RELEVANT_ELEMENTS}
 
