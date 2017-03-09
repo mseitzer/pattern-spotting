@@ -8,6 +8,8 @@ import os
 import sys
 from PIL import Image
 
+from notary_charters.annotations import write_labeled_annotations
+
 parser = argparse.ArgumentParser(description='Build working set of images')
 parser.add_argument('--data-dir', required=True, help='Data directory')
 parser.add_argument('--out-dir', required=True, help='Output directory')
@@ -101,12 +103,14 @@ def main(args):
                 prev_queries.append((query_name, bbox))
                 queries_per_label[label] = prev_queries
 
-    with open(os.path.join(query_dir, 'labeled_crops.csv'), 'w') as f:
-        for label, queries in queries_per_label.items():
-            for query in queries:
-                query_name, bbox = query
-                bbox_str = ' '.join([str(c) for c in bbox])
-                f.write('{};{};{}\n'.format(query_name, bbox_str, label))
+    labeled_annotations = []
+    for label, queries in sorted(queries_per_label.items()):
+        for query in queries:
+            query_name, bbox = query
+            labeled_annotations.append((query_name, bbox, label))
+
+    query_file = os.path.join(query_dir, 'labeled_queries.csv')
+    write_labeled_annotations(query_file, labeled_annotations)
 
 if __name__ == '__main__':
     main(sys.argv[1:])
