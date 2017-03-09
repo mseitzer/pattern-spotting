@@ -161,7 +161,7 @@ def main(args):
     if not args.overwrite and os.path.isfile(args.output_file):
         for image, bbox, label in parse_labeled_annotations(args.output_file):
             imagebbox = ImageBbox(image=image, bbox=bbox)
-            labeled_annotations[imagebbox] = label
+            labeled_annotations[imagebbox] = int(label)
         print('Recovered {} previous labeled annotations '
               'from {}'.format(len(labeled_annotations), args.output_file))
     else:

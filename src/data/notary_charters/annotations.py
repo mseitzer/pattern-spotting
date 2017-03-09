@@ -57,9 +57,9 @@ def parse_labeled_annotations(file):
     """
     with open(file, 'r') as f:
         for line in f:
-            name, bbox, label = line.split(';')
+            name, bbox, label = line.rstrip().split(';')
             bbox = tuple((int(c) for c in bbox.split(' ')))
-            yield name, bbox, int(label)
+            yield name, bbox, label
 
 
 def write_labeled_annotations(file, labeled_annotations):
