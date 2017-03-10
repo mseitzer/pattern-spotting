@@ -29,7 +29,7 @@ def _inception_v3(output_layer='mixed10'):
     return _wrap_model(model, output_layer)
 
 
-def _xception(output_layer='block15_sepconv2_act'):
+def _xception(output_layer='block14_sepconv2_act'):
     from keras.applications.xception import Xception
     model = Xception(weights='imagenet', include_top=False)
     return _wrap_model(model, output_layer)
