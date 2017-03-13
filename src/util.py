@@ -3,7 +3,11 @@ import keras.preprocessing.image as keras_image
 
 def normalize(v):
     """L2 normalization of vector"""
-    return v / np.linalg.norm(v, 2)
+    norm = np.linalg.norm(v, 2)
+    if norm == 0.0:
+        return v
+    else:
+        return v / norm
     
 
 def crop_image(image, bounding_box):
