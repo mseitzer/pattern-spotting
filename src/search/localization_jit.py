@@ -213,12 +213,14 @@ def localize(query,
 
     best_area = None
     best_score = -np.inf
-    for area in _area_generator(integral_image.shape[:2], step_size, 
-                                query_aspect_ratio, aspect_ratio_factor):
-        score = _compute_area_score(query_f64, area, integral_image, AML_EXP)
-        if score > best_score:
-            best_area = area
-            best_score = score
+    while best_area is None:
+        for area in _area_generator(integral_image.shape[:2], step_size, 
+                                    query_aspect_ratio, aspect_ratio_factor):
+            score = _compute_area_score(query_f64, area, integral_image, AML_EXP)
+            if score > best_score:
+                best_area = area
+                best_score = score
+        aspect_ratio_factor += 0.5
 
     return _area_refinement(query_f64, best_area, best_score, integral_image, 
                             exp=AML_EXP)
