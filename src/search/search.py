@@ -59,7 +59,7 @@ def _localize_parallel(search_model, query_features, feature_idxs, image_shape,
     search_model: instance of the SearchModel class
     query_features: features of the image to query for
     features_idxs: N indices of the features to query on
-    image_shape: shape of the original image in the form of (height, width)
+    image_shape: shape of the query image in the form of (height, width)
     n_threads: number of threads to use in parallel
 
     Returns: array of N bounding boxes in the form of (left, upper, 
@@ -95,7 +95,7 @@ def _localize(search_model, query_features, feature_idxs, image_shape):
     search_model: instance of the SearchModel class
     query_features: features of the image to query for
     features_idxs: N indices of the features to query on
-    image_shape: shape of the original image in the form of (height, width)
+    image_shape: shape of the query image in the form of (height, width)
 
     Returns: array of N bounding boxes in the form of (left, upper, 
         right, lower).
