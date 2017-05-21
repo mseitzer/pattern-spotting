@@ -15,6 +15,7 @@ setup:
 	mkdir database
 	mkdir features
 	mkdir -p models/evaluation
+	ln -s ../../data/ web/static/data
 
 test:
 	cmd/test_runner.py
