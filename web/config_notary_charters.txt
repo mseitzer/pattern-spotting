@@ -1,0 +1,5 @@
+{
+        "model": "VGG16",
+        "features": "../features/notary_charters",
+        "database": "../database/notary_charters.db"
+}
