@@ -24,14 +24,25 @@ def main(args):
     if not os.path.isdir(args.output_dir):
         os.makedirs(args.output_dir)
 
+    num_images = 0
     for image in images:
-        img = Image.open(os.path.join(args.input_dir, image))
-        img.thumbnail((args.size, args.size))
         out_path = os.path.join(args.output_dir, image)
-        img.save(out_path)
+        if os.path.isfile(out_path):
+            continue
 
-    print('Resized {} images to maximum side size {}'.format(len(images), 
-                                                             args.size))
+        try:
+            img = Image.open(os.path.join(args.input_dir, image))
+            img.thumbnail((args.size, args.size))
+            img.save(out_path)
+            num_images += 1
+        except Exception as e:
+            print('Warning: skipped image {} due to exception {}'.format(
+                image, str(e))
+        
+
+    print('Resized {}/{} images to maximum side size {}'.format(num_images,
+                                                                len(images) 
+                                                                args.size))
 
 if __name__ == '__main__':
     main(sys.argv[1:])
