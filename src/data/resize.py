@@ -36,12 +36,11 @@ def main(args):
             img.save(out_path)
             num_images += 1
         except Exception as e:
-            print('Warning: skipped image {} due to exception {}'.format(
-                image, str(e))
+            print('Warning: skipped image {} due to exception "{}"'.format(
+                image, str(e)))
         
-
     print('Resized {}/{} images to maximum side size {}'.format(num_images,
-                                                                len(images) 
+                                                                len(images),
                                                                 args.size))
 
 if __name__ == '__main__':
