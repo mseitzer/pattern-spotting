@@ -1,0 +1,6 @@
+{
+	"model": "VGG19",
+	"features": "features/notary_charters_vgg19_block4_4",
+	"rerank_n": 100,
+	"map_n": 17
+}

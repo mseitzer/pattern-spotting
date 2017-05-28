@@ -1,0 +1,6 @@
+{
+	"model": "ResNet50",
+	"features": "features/notary_charters_resnet50_act46",
+	"rerank_n": 100,
+	"map_n": 17
+}
