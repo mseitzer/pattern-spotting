@@ -24,6 +24,10 @@ A working system could potentially simplify the life of historians, who currentl
 Here, `DATASET` contains the name referring to the generated dataset, and `IMAGE_DIR` is the directory containing the images used for the image database. 
 It might take a while until the process is finished.
 
+#### Query the image database using the commandline:
+
+```cmd/query --features features/notary_charters --model VGG16 <query_image>```
+
 #### Query the image database using the web frontend:
 
 - Setup the image metadata database: `cmd/modify_database.py --root-dir data/ create database/notary_charters.db data/interim/notary_charters/notary_charters.csv`
@@ -43,8 +47,8 @@ cd web
 The evaluation uses hand-labeled pattern occurences, which is why it is only available for the notary charters dataset. 
 The evaluation scripts reports:
 - retrieval performance as mAP, i.e. the mean average precision over all correctly retrieved images
-- localization performance as mAP, i.e. the mean average precision over all correctly retrieved and localized images
-- localization performance as IoU, i.e. the intersection over union score of all correctly retrieved images
+- localization performance as mAP, i.e. the mean average precision over all correctly retrieved and localized patterns
+- localization performance as IoU, i.e. the intersection over union score of all correctly retrieved patterns
 
 ## Repository Structure
 
@@ -63,3 +67,4 @@ web/          # The web frontend
 ## References
 
 - [Giorgos Tolias, Ronan Sicre, Hervé Jégou - Particular object retrieval with integral max-pooling of CNN activations](https://arxiv.org/abs/1511.05879)
+- [Matlab implementation of Particular object retrieval with integral max-pooling of CNN activations](http://cmp.felk.cvut.cz/~toliageo/soft.html)
