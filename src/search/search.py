@@ -52,7 +52,7 @@ def _query(query_features, feature_store, top_n=0):
 
 
 def _localize_parallel(search_model, query_features, feature_idxs, image_shape,
-                       n_threads=4):
+                       n_threads=8):
     """Localizes where a query occurs on a number of features
 
     Args:
