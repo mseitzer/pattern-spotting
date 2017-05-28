@@ -11,7 +11,7 @@ def _vgg_16(output_layer='block5_conv3'):
     return _wrap_model(model, output_layer)
 
 
-def _vgg_19(output_layer='block5_conv4'):
+def _vgg_19(output_layer='block4_conv4'):
     from keras.applications.vgg19 import VGG19
     model = VGG19(weights='imagenet', include_top=False)
     return _wrap_model(model, output_layer)
