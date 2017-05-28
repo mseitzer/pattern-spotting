@@ -23,7 +23,7 @@ parser.add_argument('predictions_file',
                     help='File saving predictions to or containing predictions')
 
 # Number of images a label must have to be considered as a query
-MIN_RELEVANT_ELEMENTS = 5
+MIN_RELEVANT_ELEMENTS = 2
 # Minimum IoU a localized object must reach to be considered a hit
 MIN_LOCALIZATION_IOU = 0.5
 
