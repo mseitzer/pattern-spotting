@@ -1,4 +1,4 @@
-# Historic Image Retrieval using Deep Learned Features
+# Historic Image Retrieval using Deep Features
 
 This repository contains the implementation of an image retrieval system. 
 The project was implemented using Python, Tensorflow and Keras. 
@@ -6,7 +6,15 @@ The implementation follows [this paper](https://arxiv.org/abs/1511.05879) from T
 For ease of testing, the project also includes a simple web frontend which allows to query the extracted image descriptor database interactively.
 
 The system was designed for the application of finding recurring occurences of patterns in historical documents, e.g. a certain sign. 
-A working system could potentially simplify the life of historians, who currently have to sift through heaps of scanned documents by hand.
+A system like this could potentially simplify the life of historians, who currently have to sift through heaps of scanned documents by hand.
+
+Contributions of this project:
+- Providing a flexible implementation of an image retrieval system
+- Introducing a [new dataset](#notary-charters-dataset) for pattern spotting on historical documents
+
+See also the [research report](http://www.max-seitzer.de/files/static/pattern-spotting.pdf) for an evaluation of the system and possible future directions.
+
+![Web frontend](resources/web_frontend.png)
 
 ## Setup
 
@@ -64,7 +72,27 @@ src/search    # Code implementing the retrieval algorithm
 web/          # The web frontend
 ```
 
+## Notary charters dataset
+
+Notary charters were used in the classical and medieval eras as legal documents. 
+Each notary had his own sign to identify himself and prove the authenticity of the document. 
+In order to make it harder to fake them, the signs were really graphically elaborate. 
+Historians often search for corresponding signs as they link the documents on which they appear together. 
+
+![Notary charters example](resources/notary_charter.png)
+
+As in the domain of historical documents there is next to no annotated data available (we know only of [DocExplore](http://spotting.univ-rouen.fr/), but they provide no annotations), we had to build our own dataset in order to evaluate our approach.
+We now provide this dataset, namely of notary charters and notary signs, here.
+
+The dataset consists of 977 images of notary charters, all from [monasterium.net](monasterium.net).
+On those images, 606 search patterns (different notary signs) were hand-annotated with bounding boxes. 
+Then, 295 of the patterns were sorted into 77 correspondency groups with on average 3.8 patterns per group. 
+The remaining 311 patterns appear only once and have no corresponding patterns on other images.
+
+There is also a second, larger dataset which consists of the 977 notary charter images and 31215 distractor images which make the retrieval task harder.
+
 ## References
 
 - [Giorgos Tolias, Ronan Sicre, Hervé Jégou - Particular object retrieval with integral max-pooling of CNN activations](https://arxiv.org/abs/1511.05879)
 - [Matlab implementation of Particular object retrieval with integral max-pooling of CNN activations](http://cmp.felk.cvut.cz/~toliageo/soft.html)
+- [Monasterium for the notary charters images](http://monasterium.net/mom/home)
