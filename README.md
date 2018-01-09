@@ -78,13 +78,16 @@ Notary charters were used in the classical and medieval eras as legal documents.
 Each notary had his own sign to identify himself and prove the authenticity of the document. 
 In order to make it harder to fake them, the signs were really graphically elaborate. 
 Historians often search for corresponding signs as they link the documents on which they appear together. 
+More on the historical importance of charters can be found [here](http://charlemagneseurope.ac.uk/charter-basics/).
 
 ![Notary charters example](resources/notary_charter.png)
+Image property of [HHSTA Salzburg](http://www.monasterium.net/mom/AT-HHStA/SbgE/AUR_1420_IV_15/charter)
 
 As in the domain of historical documents there is next to no annotated data available (we know only of [DocExplore](http://spotting.univ-rouen.fr/), but they provide no annotations), we had to build our own dataset in order to evaluate our approach.
-We now provide this dataset, namely of notary charters and notary signs, here.
+We now release our dataset with bounding boxes of notary signs here.
+Note that all images fall under the terms of use of Monasterium, see [here](http://monasterium.net/mom/terms-of-use)!
 
-The dataset consists of 977 images of notary charters, all from [monasterium.net](monasterium.net).
+The dataset consists of 975 images of notary charters, all from [monasterium.net](http://www.monasterium.net/mom/home).
 On those images, 606 search patterns (different notary signs) were hand-annotated with bounding boxes. 
 Then, 295 of the patterns were sorted into 77 correspondency groups with on average 3.8 patterns per group. 
 The remaining 311 patterns appear only once and have no corresponding patterns on other images.
