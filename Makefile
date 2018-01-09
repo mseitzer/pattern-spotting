@@ -55,7 +55,7 @@ dataset-notary-charters: 	${NOTARY_CHARTERS_DIR}/notary_charters.csv \
 							${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters/query
 
 ${NOTARY_CHARTERS_DIR}/notary_charters.csv:
-	src/data/notary_charters/dl_notary_charters.py -o ${NOTARY_CHARTERS_DIR} \ 
+	src/data/notary_charters/dl_notary_charters.py -o ${NOTARY_CHARTERS_DIR} \
 		data/external/notary_charters/notary_charters.xml
 
 ${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters: 
@@ -75,6 +75,28 @@ ${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters/query: data/external/notary_chart
 dataset-working: ${NOTARY_CHARTERS_DIR}/notary_charters.csv
 	mkdir -p ${DATA_DIR}/working
 	src/data/working.py --data-dir ${DATA_DIR} --out-dir ${DATA_DIR}/working
+
+dataset-notary-charters-large: 	${NOTARY_CHARTERS_DIR}/notary_charters_large.csv \
+							    ${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters_large \
+							    ${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters_large/query
+
+${NOTARY_CHARTERS_DIR}/notary_charters_large.csv:
+	src/data/notary_charters/dl_notary_charters.py -o ${NOTARY_CHARTERS_DIR} \
+		data/external/notary_charters/notary_charters_large.xml
+
+${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters_large: 
+	src/data/resize.py ${NOTARY_CHARTERS_DIR}/notary_charters_large \
+		--size ${NOTARY_CHARTERS_RESIZED_SIZE} \
+		${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters_large
+
+${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters_large/query: data/external/notary_charters/labeled_annotations/labeled_annotations.csv
+	rm -rf ${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters_large/query
+	mkdir ${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters_large/query
+	src/data/notary_charters/make_query_dataset.py \
+		--size ${NOTARY_CHARTERS_RESIZED_SIZE} \
+		${NOTARY_CHARTERS_DIR}/notary_charters_large \
+		${NOTARY_CHARTERS_RESIZED_DIR}/notary_charters_large/query \
+		data/external/notary_charters/labeled_annotations/labeled_annotations.csv
 
 ##### Evaluation #####
 
